@@ -1,5 +1,3 @@
-import typing
-
 import pydantic
 
 from src import enums
@@ -31,6 +29,6 @@ class AssetPct(pydantic.BaseModel):
 
 
 class AddressUpdate(UsdValue):
-    assets_blockchain: typing.List[BlockchainAsset]
-    assets_pct: typing.List[AssetPct]
-    assets_usd: typing.List[AggregatedAssetUsd]
+    assets_blockchain: list[BlockchainAsset]
+    assets_pct: list[AssetPct]
+    assets_usd: list[AggregatedAssetUsd]

@@ -9,3 +9,7 @@ class Blockchain(str, enum.Enum):
     FTM = "Fantom"
     MATIC = "Polygon"
     ARB = "Arbitrum"
+
+
+class BlockchainType(enum.Enum):
+    EVM = 1

@@ -3,7 +3,7 @@ import typing
 
 import aiohttp
 
-from src import schemas, enums
+from src import enums, schemas, spec
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +22,23 @@ class Debank:
     def __init__(self) -> None:
         pass
 
+    @staticmethod
+    async def _async_get_blockchain_assets(
+        address: schemas.Address,
+    ) -> typing.List[schemas.BlockchainAsset]:
+        url = f"{Debank.DEBANK_URL}token/cache_balance_list?user_addr={address.address}"
+        balances_json = await Debank._async_request(url)
+        if "data" not in balances_json:
+            raise DebankDataInvalid()
+        balances: typing.List[schemas.BlockchainAsset] = []
+        all_data = balances_json["data"]
+        for data in all_data:
+            blockchain_asset = Debank._extract_blockchain_asset(data)
+            if blockchain_asset:
+                balances.append(blockchain_asset)
+        sorted_blockchain_assets = await Debank._sort_by_value_usd(balances)
+        return sorted_blockchain_assets
+
     async def async_get_assets_for_address(
         self, address: schemas.Address
     ) -> schemas.AddressUpdate:
@@ -35,7 +52,7 @@ class Debank:
 
     @staticmethod
     def _parse_debank_blockchain(blockchain: str) -> enums.Blockchain:
-        match blockchain:
+        match blockchain:  # noqa: E999
             case "eth":
                 return enums.Blockchain.ETH
             case "ftm":
@@ -49,7 +66,7 @@ class Debank:
         raise DebankUnknownBlockchain()
 
     @staticmethod
-    async def _async_request(url: str) -> typing.Dict[str, typing.Any]:
+    async def _async_request(url: str) -> typing.Any:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 return await response.json()
@@ -79,25 +96,8 @@ class Debank:
         )
 
     @staticmethod
-    async def _async_get_blockchain_assets(
-        address: schemas.Address,
-    ) -> typing.List[schemas.BlockchainAsset]:
-        url = f"{Debank.DEBANK_URL}token/cache_balance_list?user_addr={address.address}"
-        balances_json = await Debank._async_request(url)
-        if "data" not in balances_json:
-            raise DebankDataInvalid()
-        balances: typing.List[schemas.BlockchainAsset] = []
-        all_data = balances_json["data"]
-        for data in all_data:
-            blockchain_asset = Debank._extract_blockchain_asset(data)
-            if blockchain_asset:
-                balances.append(blockchain_asset)
-        sorted_blockchain_assets = await Debank._sort_by_value_usd(balances)
-        return sorted_blockchain_assets
-
-    @staticmethod
     async def _sort_by_value_usd(
-        value_usd_list: typing.List[schemas.UsdValue],
-    ) -> typing.List[schemas.UsdValue]:
+        value_usd_list: typing.List[spec.UsdValue],
+    ) -> typing.List[spec.UsdValue]:
         value_usd_list.sort(key=lambda x: x.value_usd, reverse=True)
         return value_usd_list
