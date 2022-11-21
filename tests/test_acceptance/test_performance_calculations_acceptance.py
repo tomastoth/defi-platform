@@ -1,4 +1,4 @@
-from src import data, enums, performance_calculations
+from src import data, performance_calculations
 
 
 def test_performance_calculations_acceptance() -> None:
@@ -48,10 +48,8 @@ def test_performance_calculations_acceptance() -> None:
         ],
     )
     # we compare old to new to get account performance
-    address = data.Address(address="0x123", blockchain_type=enums.BlockchainType.EVM)
 
     performance_result = performance_calculations.calculate_performance(
-        address=address,
         old_address_updates=old_addres_update.aggregated_assets,
         new_address_updates=new_address_update.aggregated_assets,
     )

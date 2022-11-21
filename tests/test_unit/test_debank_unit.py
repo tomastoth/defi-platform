@@ -2,6 +2,7 @@ import json
 import unittest.mock
 
 import pytest
+
 from src import config, data, debank, enums
 from tests.test_unit.fixtures import address  # noqa
 

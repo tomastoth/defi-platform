@@ -3,7 +3,7 @@ import typing
 
 import aiohttp
 
-from src import enums, spec, data
+from src import data, enums, spec
 
 log = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class Debank:
 
     @staticmethod
     async def _async_get_blockchain_assets(
-            address: data.Address,
+        address: data.Address,
     ) -> typing.List[data.BlockchainAsset]:
         url = f"{Debank.DEBANK_URL}token/cache_balance_list?user_addr={address.address}"
         balances_json = await Debank._async_request(url)
@@ -30,7 +30,9 @@ class Debank:
         balances: typing.List[data.BlockchainAsset] = []
         all_data = balances_json["data"]
         for single_data in all_data:
-            blockchain_wallet_asset = Debank._extract_blockchain_wallet_asset(single_data)
+            blockchain_wallet_asset = Debank._extract_blockchain_wallet_asset(
+                single_data
+            )
             if blockchain_wallet_asset:
                 balances.append(blockchain_wallet_asset)
         sorted_blockchain_wallet_assets = Debank._sort_by_value_usd(balances)
@@ -38,7 +40,7 @@ class Debank:
 
     @staticmethod
     async def _async_get_aggregated_usd_assets(
-            address: data.Address,
+        address: data.Address,
     ) -> list[data.AggregatedUsdAsset]:
         url = f"{Debank.DEBANK_URL}/asset/classify?user_addr={address.address}"
         overall_assets_json = await Debank._async_request(url)
@@ -55,7 +57,7 @@ class Debank:
 
     @staticmethod
     def _add_pct_value(
-            aggregated_usd_assets: list[data.AggregatedUsdAsset], sum_value_usd: float
+        aggregated_usd_assets: list[data.AggregatedUsdAsset], sum_value_usd: float
     ) -> list[data.AggregatedAsset]:
         aggregated_assets: list[data.AggregatedAsset] = []
         for aggregated_usd_asset in aggregated_usd_assets:
@@ -71,7 +73,7 @@ class Debank:
         return aggregated_assets
 
     async def async_get_assets_for_address(
-            self, address: data.Address
+        self, address: data.Address
     ) -> data.AddressUpdate:
         blockchain_assets = await self._async_get_blockchain_assets(address=address)
         aggregated_usd_assets = await self._async_get_aggregated_usd_assets(
@@ -91,7 +93,7 @@ class Debank:
 
     @staticmethod
     def _extract_aggregated_usd_asset(
-            coin: dict[str, typing.Any]
+        coin: dict[str, typing.Any]
     ) -> data.AggregatedUsdAsset:
         token_amount = coin["amount"]
         symbol = coin["symbol"]
@@ -125,7 +127,7 @@ class Debank:
 
     @staticmethod
     def _extract_blockchain_wallet_asset(
-            wallet_data: typing.Dict[str, typing.Any]
+        wallet_data: typing.Dict[str, typing.Any]
     ) -> typing.Optional[data.BlockchainAsset]:
         try:
             token_amount = float(wallet_data["amount"])
@@ -153,13 +155,13 @@ class Debank:
 
     @staticmethod
     def _sort_by_value_usd(
-            value_usd_list: typing.List[spec.UsdValue],
+        value_usd_list: typing.List[spec.UsdValue],
     ) -> typing.List[spec.UsdValue]:
         value_usd_list.sort(key=lambda x: x.value_usd, reverse=True)
         return value_usd_list
 
     @staticmethod
     def _calc_sum_usd_value(
-            aggregated_usd_assets: list[data.AggregatedUsdAsset],
+        aggregated_usd_assets: list[data.AggregatedUsdAsset],
     ) -> float:
         return sum([asset.value_usd for asset in aggregated_usd_assets])
