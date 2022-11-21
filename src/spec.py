@@ -1,5 +1,5 @@
 import typing
 
-from src import schemas
+from src import data
 
-UsdValue = typing.TypeVar("UsdValue", bound=schemas.UsdValue)
+UsdValue = typing.TypeVar("UsdValue", bound=data.UsdValue)
