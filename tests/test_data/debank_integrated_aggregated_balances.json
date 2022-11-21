@@ -1,0 +1,27 @@
+{
+  "_cache_seconds": 0,
+  "_seconds": 0.0321040153503418,
+  "_use_cache": false,
+  "data": {
+    "coin_list": [
+      {
+        "amount": 100.0,
+        "chain": "eth",
+        "decimals": 18,
+        "display_symbol": "None",
+        "id": "eth",
+        "is_core": true,
+        "is_verified": true,
+        "is_wallet": true,
+        "logo_url": "https://static.debank.com/image/hmy_token/logo_url/hmy/734c003023531e31c636ae25d5a73172.png",
+        "name": "ETH",
+        "optimized_symbol": "ETH",
+        "price": 1000.0,
+        "protocol_id": "",
+        "symbol": "ETH",
+        "time_at": "None"
+      }
+    ]
+  },
+  "error_code": 0
+}
