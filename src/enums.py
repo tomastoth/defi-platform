@@ -11,5 +11,5 @@ class Blockchain(str, enum.Enum):
     ARB = "Arbitrum"
 
 
-class BlockchainType(enum.Enum):
-    EVM = 1
+class BlockchainType(str, enum.Enum):
+    EVM = "EVM"

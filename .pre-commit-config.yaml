@@ -20,7 +20,7 @@ repos:
     rev: v0.991
     hooks:
       - id: mypy
-        args: [ --strict , --ignore-missing-imports, --no-namespace-packages]
+        args: [ --strict , --ignore-missing-imports, --no-namespace-packages ]
         additional_dependencies:
           - pydantic
           - pytest
@@ -28,10 +28,18 @@ repos:
     rev: v0.0.128
     hooks:
       - id: ruff
-        args: [ --fix]
+        args: [ --fix ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
     hooks:
       - id: check-yaml
       - id: trailing-whitespace
       - id: check-merge-conflict
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
