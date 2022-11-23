@@ -23,8 +23,12 @@ async def test_saving_aggregated_model() -> None:
     mock_add: mock.AsyncMock = mock_session.add
     execute_query = mock.MagicMock()
     mock_session.execute.return_value = execute_query
-    execute_query.scalars.return_value.first.return_value = models.Address(address="0x123", blockchain_type="EVM")
-    await services.async_save_aggregated_update(update_to_save, address_to_save, mock_session)
+    execute_query.scalars.return_value.first.return_value = models.Address(
+        address="0x123", blockchain_type="EVM"
+    )
+    await services.async_save_aggregated_update(
+        update_to_save, address_to_save, mock_session
+    )
     created_model: models.AggregatedBalanceUpdate = mock_add.call_args[0][0]
     assert created_model.symbol == update_to_save.symbol
     assert created_model.price == update_to_save.price
@@ -64,7 +68,9 @@ async def test_finding_all_addresses(model_address: models.Address) -> None:
     execute_mock = mock.MagicMock()
     execute_mock.scalars.return_value.all.return_value = addresses_data
     session_mock.execute.return_value = execute_mock
-    addresses: list[models.Address] = await services.async_find_all_addresses(session=session_mock)
+    addresses: list[models.Address] = await services.async_find_all_addresses(
+        session=session_mock
+    )
     expected_address = addresses[0]
     assert expected_address.address == "0x123"
     assert expected_address.blockchain_type == "EVM"

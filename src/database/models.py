@@ -13,6 +13,9 @@ class Address(db.Base):  # type: ignore
         "AggregatedBalanceUpdate", back_populates="address"
     )
 
+    def __repr__(self) -> str:
+        return f"address: {self.address}, blockchain_type: {self.blockchain_type}"
+
 
 class AggregatedBalanceUpdate(db.Base):  # type: ignore
     __tablename__ = "address_updates"
@@ -27,4 +30,7 @@ class AggregatedBalanceUpdate(db.Base):  # type: ignore
     address_id = Column(sqlalchemy.Integer, ForeignKey("address.id"))
 
     def __repr__(self) -> str:
-        return f"symbol: {self.symbol}, value_usd: {self.value_usd}, price: {self.price} time: {self.time}"
+        return (
+            f"symbol: {self.symbol}, value_usd: {self.value_usd}, price: {self.price} "
+            f"time: {self.time} address: {self.address}"
+        )
