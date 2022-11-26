@@ -1,6 +1,6 @@
 import pytest
 
-from src import data, performance_calculations
+from src import data, performance_calculations, time_utils
 from tests.test_unit.fixtures import address, model_address  # noqa
 from tests.test_unit.utils import create_aggregated_update
 
@@ -24,5 +24,8 @@ def test_asset_gaining_in_value(
     performance_result = performance_calculations.calculate_performance(
         old_address_updates=old_update.aggregated_assets,
         new_address_updates=new_update.aggregated_assets,
+        start_time=time_utils.get_datetime_from_ts(0),
+        end_time=time_utils.get_datetime_from_ts(1),
+        address=address,
     )
     assert performance_result.performance == pytest.approx(performance)

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from src import data, math_utils
 
 
@@ -14,6 +16,9 @@ def _add_assets_to_dict(
 def calculate_performance(
     old_address_updates: list[data.AggregatedAsset],
     new_address_updates: list[data.AggregatedAsset],
+    start_time: datetime,
+    address: data.Address,
+    end_time: datetime = datetime.now(),
 ) -> data.PerformanceResult:
     old_assets_dict = _add_assets_to_dict(old_address_updates)
     new_assets_dict = _add_assets_to_dict(new_address_updates)
@@ -27,5 +32,10 @@ def calculate_performance(
             old_asset_pct_held = old_asset.value_pct / 100.0
             performance_gain = asset_price_change_pct * old_asset_pct_held
             performance += performance_gain
-    performance_result = data.PerformanceResult(performance=performance)
+    performance_result = data.PerformanceResult(
+        performance=performance,
+        start_time=start_time,
+        end_time=end_time,
+        address=address,
+    )
     return performance_result

@@ -22,12 +22,12 @@ class Debank:
     @staticmethod
     async def _async_get_blockchain_assets(
         address: data.Address,
-    ) -> typing.List[data.BlockchainAsset]:
+    ) -> list[data.BlockchainAsset]:
         url = f"{Debank.DEBANK_URL}token/cache_balance_list?user_addr={address.address}"
         balances_json = await Debank._async_request(url)
         if "data" not in balances_json:
             raise DebankDataInvalid()
-        balances: typing.List[data.BlockchainAsset] = []
+        balances: list[data.BlockchainAsset] = []
         all_data = balances_json["data"]
         for single_data in all_data:
             blockchain_wallet_asset = Debank._extract_blockchain_wallet_asset(
@@ -155,8 +155,8 @@ class Debank:
 
     @staticmethod
     def _sort_by_value_usd(
-        value_usd_list: typing.List[spec.UsdValue],
-    ) -> typing.List[spec.UsdValue]:
+        value_usd_list: list[spec.UsdValue],
+    ) -> list[spec.UsdValue]:
         value_usd_list.sort(key=lambda x: x.value_usd, reverse=True)
         return value_usd_list
 

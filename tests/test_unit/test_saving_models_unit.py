@@ -1,7 +1,9 @@
+from datetime import datetime
 from unittest import mock
 
 import pytest
 
+import src.exceptions
 from src import data
 from src.database import models, services
 from tests.test_unit import utils
@@ -20,7 +22,8 @@ async def test_saving_aggregated_model() -> None:
     ).aggregated_assets[0]
     address_to_save = data.Address(address="0x123")
     mock_session = mock.AsyncMock()
-    mock_add: mock.AsyncMock = mock_session.add
+    mock_add: mock.AsyncMock = mock.MagicMock()
+    mock_session.add = mock_add
     execute_query = mock.MagicMock()
     mock_session.execute.return_value = execute_query
     execute_query.scalars.return_value.first.return_value = models.Address(
@@ -34,7 +37,7 @@ async def test_saving_aggregated_model() -> None:
     assert created_model.price == update_to_save.price
     assert created_model.value_usd == update_to_save.value_usd
     assert created_model.value_pct == update_to_save.value_pct
-    assert created_model.time == update_to_save.time_ms
+    assert created_model.timestamp == update_to_save.timestamp
     assert created_model.amount == update_to_save.amount
     address_model: models.Address = created_model.address
     assert address_model.address == "0x123"
@@ -43,7 +46,8 @@ async def test_saving_aggregated_model() -> None:
 @pytest.mark.asyncio
 async def test_creating_new_address(address: data.Address) -> None:
     session_mock = mock.AsyncMock()
-    add_mock: mock.AsyncMock = session_mock.add
+    add_mock: mock.AsyncMock = mock.MagicMock()
+    session_mock.add = add_mock
     with mock.patch("src.database.services.async_find_address") as find_address:
         find_address.return_value = None
         await services.async_save_address(address=address, session=session_mock)
@@ -57,7 +61,7 @@ async def test_throwing_when_address_already_exists(address: models.Address) -> 
     session_mock = mock.AsyncMock()
     with mock.patch("src.database.services.async_find_address") as find_address:
         find_address.return_value = mock.MagicMock()
-        with pytest.raises(services.AddressAlreadyExistsError):
+        with pytest.raises(src.exceptions.AddressAlreadyExistsError):
             await services.async_save_address(address, session_mock)
 
 
@@ -74,3 +78,27 @@ async def test_finding_all_addresses(model_address: models.Address) -> None:
     expected_address = addresses[0]
     assert expected_address.address == "0x123"
     assert expected_address.blockchain_type == "EVM"
+
+
+@pytest.mark.asyncio
+async def test_saving_performance_result(
+    address: data.Address, model_address: models.Address
+) -> None:
+    mock_service = utils.mock_finding_address(model_address)
+    add_mock = mock.MagicMock()
+    mock_service.add = add_mock
+    perf_data = data.PerformanceResult(
+        performance=10.0,
+        start_time=datetime(2022, 1, 1, 1, 1, 1),
+        end_time=datetime(2022, 1, 1, 1, 5, 1),
+        address=address,
+    )
+    await services.async_save_performance_result(perf_data, mock_service)
+    created_perf_model: models.PerformanceRunResult = add_mock.call_args[0][0]
+    assert created_perf_model.address.id == model_address.id
+    assert created_perf_model.performance == perf_data.performance
+    assert created_perf_model.start_time == perf_data.start_time
+    assert created_perf_model.end_time == perf_data.end_time
+    assert created_perf_model.address_id == model_address.id
+    assert created_perf_model.time_created
+    assert created_perf_model.time_updated
