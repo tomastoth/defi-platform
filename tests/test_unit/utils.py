@@ -1,10 +1,13 @@
+from unittest import mock
+
 import pytest
 from sqlalchemy import orm
 from sqlalchemy.ext import asyncio as sql_asyncio
 
 from src import data
 from src.config import config
-from src.database import db
+from src.database import db, models
+from tests.test_unit.fixtures import model_address  # noqa
 
 
 def create_aggregated_update(
@@ -18,7 +21,7 @@ def create_aggregated_update(
                 symbol="ETH",
                 amount=amount,
                 price=price,
-                time_ms=101,
+                timestamp=101,
                 value_pct=value_pct,
                 value_usd=value_pct,
             )
@@ -27,7 +30,7 @@ def create_aggregated_update(
 
 
 @pytest.mark.asyncio
-async def test_database_session():
+async def test_database_session() -> orm.sessionmaker:
     engine = sql_asyncio.create_async_engine(config.test_db_url, echo=True)
     async with engine.begin() as conn:
         db.Base.metadata.bind = conn
@@ -37,3 +40,11 @@ async def test_database_session():
         engine, class_=sql_asyncio.AsyncSession, expire_on_commit=False
     )
     return async_session
+
+
+def mock_finding_address(model_address: models.Address) -> mock.AsyncMock:
+    session = mock.AsyncMock()
+    find_mock = mock.MagicMock()
+    session.execute.return_value = find_mock
+    find_mock.scalars.return_value.first.return_value = model_address
+    return session

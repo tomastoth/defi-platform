@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import mock
 
 import pytest
@@ -5,26 +6,41 @@ import pytest
 from src import data, runner
 from src.database import models
 from tests.test_unit import utils
-from tests.test_unit.fixtures import model_address  # noqa
+from tests.test_unit.fixtures import address, model_address  # noqa
+
+
+async def get_assets(address: data.Address) -> data.AddressUpdate:
+    aggregated_asset = utils.create_aggregated_update(
+        amount=100.0, price=1000.0, value_pct=100.0, value_usd=100000.0
+    ).aggregated_assets[0]
+    return data.AddressUpdate(
+        value_usd=100000,
+        blockchain_wallet_assets=[],
+        aggregated_assets=[aggregated_asset],
+    )
 
 
 @pytest.mark.asyncio
-async def test_running_all_addresses(model_address: models.Address) -> None:
-    execute_mock = mock.MagicMock()
-    execute_mock.scalars.return_value.all.return_value = [model_address]
-    session = mock.AsyncMock()
-    session.execute.return_value = execute_mock
-    with mock.patch(
-        "src.debank.Debank.async_get_assets_for_address"
-    ) as get_assets_for_address:
-        aggregated_asset = utils.create_aggregated_update(
-            amount=100.0, price=1000.0, value_pct=100.0, value_usd=100000.0
-        ).aggregated_assets[0]
-        get_assets_for_address.return_value = data.AddressUpdate(
-            value_usd=100000,
-            blockchain_wallet_assets=[],
-            aggregated_assets=[aggregated_asset],
-        )
-        with mock.patch("src.database.services.async_save_aggregated_update") as save:
-            await runner.async_update_all_addresses(session=session)
-            assert save.call_count == 1
+async def test_running_saving_aggregated_asset(
+    address: data.Address, model_address: models.Address
+) -> None:
+    with mock.patch("src.database.services.async_find_all_addresses") as find_addresses:
+        find_addresses.return_value = [model_address]
+        with mock.patch(
+            "src.database.services.convert_address_model"
+        ) as convert_address:
+            convert_address.return_value = address
+            execute_mock = mock.MagicMock()
+            session = mock.AsyncMock()
+            session.execute.return_value = execute_mock
+            with mock.patch(
+                "src.database.services.async_save_aggregated_update"
+            ) as save:
+                await runner.async_run_single_address(
+                    session=session,
+                    provide_assets=get_assets,
+                    address=address,
+                    run_time_dt=datetime.now(),
+                    performances=[],
+                )
+                assert save.call_count == 1
