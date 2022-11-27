@@ -89,6 +89,7 @@ async def async_find_address_last_aggregated_updates(
     last_update_query = (
         sqlalchemy.select(models.AggregatedBalanceUpdate)
         .where(models.AggregatedBalanceUpdate.address_id == address_model.id)
+        .order_by(models.AggregatedBalanceUpdate.timestamp.desc())
         .limit(1)
     )
     last_update_exec = await session.execute(last_update_query)
@@ -97,7 +98,8 @@ async def async_find_address_last_aggregated_updates(
         return []
     last_update_time = last_update.timestamp
     all_last_time_query = sqlalchemy.select(models.AggregatedBalanceUpdate).where(
-        models.AggregatedBalanceUpdate.timestamp == last_update_time
+        models.AggregatedBalanceUpdate.timestamp == last_update_time,
+        models.AggregatedBalanceUpdate.address_id == address_model.id,
     )
     all_last_time_exec = await session.execute(all_last_time_query)
     unconverted = all_last_time_exec.scalars().all()

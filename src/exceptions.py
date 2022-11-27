@@ -8,3 +8,11 @@ class AddressNotCreatedError(Exception):
 
 class AddressNotFoundError(Exception):
     pass
+
+
+class DebankDataMissingError(Exception):
+    pass
+
+
+class InvalidHttpResponseError(Exception):
+    pass

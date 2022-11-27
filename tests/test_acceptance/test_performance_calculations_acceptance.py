@@ -1,7 +1,7 @@
 import pytest
 import sqlalchemy
 
-from src import data, performance_calculations, runner, time_utils
+from src import data, performance, runner, time_utils
 from src.database import models
 from tests.test_unit import utils
 from tests.test_unit.fixtures import address  # noqa
@@ -54,9 +54,9 @@ def test_performance_calculations_acceptance(address: data.Address) -> None:
             ),
         ],
     )
-    # we compare old to new to get account performance
+    # we compare old to new to get account asset_performance
 
-    performance_result = performance_calculations.calculate_performance(
+    performance_result = performance.calculate_performance(
         old_address_updates=old_addres_update.aggregated_assets,
         new_address_updates=new_address_update.aggregated_assets,
         start_time=time_utils.get_datetime_from_ts(0),
@@ -74,7 +74,9 @@ class MockAssetProvider:
     def __init__(self) -> None:
         self.call_number = 1
 
-    async def get_assets(self, address: models.Address) -> data.AddressUpdate:
+    async def get_assets(
+        self, address: models.Address, run_time: int
+    ) -> data.AddressUpdate:
         price_multiplier_address_1 = (
             1 if self.call_number == 1 else 0.5
         )  # first address loses 50% of value
@@ -94,6 +96,7 @@ class MockAssetProvider:
                         price=price,
                         value_pct=100.0,
                         value_usd=price * amount,
+                        timestamp=run_time,
                     )
                 ],
             )
@@ -110,6 +113,7 @@ class MockAssetProvider:
                         price=price,
                         value_pct=100.0,
                         value_usd=price * amount,
+                        timestamp=run_time,
                     )
                 ],
             )

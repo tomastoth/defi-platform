@@ -9,7 +9,7 @@ from tests.test_unit import utils
 from tests.test_unit.fixtures import address, model_address  # noqa
 
 
-async def get_assets(address: data.Address) -> data.AddressUpdate:
+async def get_assets(address: data.Address, run_time: int) -> data.AddressUpdate:
     aggregated_asset = utils.create_aggregated_update(
         amount=100.0, price=1000.0, value_pct=100.0, value_usd=100000.0
     ).aggregated_assets[0]
@@ -42,5 +42,6 @@ async def test_running_saving_aggregated_asset(
                     address=address,
                     run_time_dt=datetime.now(),
                     performances=[],
+                    run_time=100,
                 )
                 assert save.call_count == 1
