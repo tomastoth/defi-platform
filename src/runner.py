@@ -1,9 +1,10 @@
+import asyncio
 import logging
 from datetime import datetime
 
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-from src import data, debank, performance_calculations, spec, time_utils
+from src import data, debank, performance, spec, time_utils
 from src.database import services
 
 log = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ async def async_calculate_address_performance(
     performances: list[data.PerformanceResult],
     run_time_dt: datetime,
 ) -> None:
-    performance_result = performance_calculations.calculate_performance(
+    performance_result = performance.calculate_performance(
         old_address_updates=last_aggregated_updates,
         new_address_updates=new_aggregated_updates,
         start_time=time_utils.get_datetime_from_ts(last_aggregated_time),
@@ -42,11 +43,18 @@ async def async_run_single_address(
     run_time_dt: datetime,
     session: sql_asyncio.AsyncSession,
     provide_assets: spec.AssetProvider,
+    run_time: int,
 ) -> None:
+    log.info(f"Updating address: {address.address}")
     last_aggregated_updates: list[
         data.AggregatedAsset
     ] = await services.async_find_address_last_aggregated_updates(address, session)
-    address_update = await provide_assets(address)
+    address_update = await provide_assets(address, run_time)
+    if not address_update:
+        log.warning(
+            f"Could not fetch last agg updates for address: {address}, skipping update"
+        )
+        return
     new_aggregated_updates = address_update.aggregated_assets
     await async_save_aggregated_assets_for_address(
         address, new_aggregated_updates, session
@@ -66,14 +74,11 @@ async def async_run_single_address(
         performances,
         run_time_dt,
     )
-    [
-        await services.async_save_performance_result(performance, session)  # type: ignore
-        for performance in performances
-    ]
 
 
 async def async_update_all_addresses(
-    session: sql_asyncio.AsyncSession, provide_assets: spec.AssetProvider | None = None
+    session: sql_asyncio.AsyncSession,
+    provide_assets: spec.AssetProvider = debank.async_provide_aggregated_assets,
 ) -> None:
     run_time = time_utils.get_time_now()
     run_time_dt = time_utils.get_datetime_from_ts(run_time)
@@ -82,9 +87,6 @@ async def async_update_all_addresses(
         services.convert_address_model(address_model)
         for address_model in addresses_models
     ]
-    debank_client = debank.Debank()
-    if not provide_assets:
-        provide_assets = debank_client.async_get_assets_for_address
     performances: list[data.PerformanceResult] = []
     for address in addresses:
         await async_run_single_address(
@@ -93,4 +95,11 @@ async def async_update_all_addresses(
             provide_assets=provide_assets,
             run_time_dt=run_time_dt,
             session=session,
+            run_time=run_time,
         )
+
+        await asyncio.sleep(15)
+    [
+        await services.async_save_performance_result(single_performance, session)  # type: ignore
+        for single_performance in performances
+    ]

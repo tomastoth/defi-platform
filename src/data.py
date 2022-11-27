@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pydantic
 
-from src import enums, time_utils
+from src import enums
 
 
 class UsdValue(pydantic.BaseModel):
@@ -27,7 +27,7 @@ class AggregatedUsdAsset(UsdValue):
 
 
 class AggregatedAsset(AggregatedUsdAsset, PctValue):
-    timestamp: int = pydantic.Field(default=time_utils.get_time_now())
+    timestamp: int
 
 
 class BlockchainAsset(UsdValue):
