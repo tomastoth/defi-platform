@@ -1,6 +1,8 @@
+from datetime import datetime
+
 import pytest
 
-from src import data, performance, time_utils
+from src import data, enums, performance, time_utils
 from tests.test_unit.fixtures import address, model_address  # noqa
 from tests.test_unit.utils import create_aggregated_update
 
@@ -29,3 +31,12 @@ def test_asset_gaining_in_value(
         address=address,
     )
     assert performance_result.performance == pytest.approx(asset_performance)
+
+
+def test_extracting_dates_from_ranking_type() -> None:
+    mock_time = datetime(2022, 1, 1, 2, 1, 1)
+    start_time, end_time = performance._get_times_for_comparison(
+        enums.AddressRankingType.HOUR, wanted_time=mock_time
+    )
+    assert start_time == datetime(2022, 1, 1, 1, 1, 1)
+    assert end_time == datetime(2022, 1, 1, 2, 1, 1)

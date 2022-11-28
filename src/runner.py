@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-from src import data, debank, performance, spec, time_utils
+from src import data, debank, enums, performance, spec, time_utils
 from src.database import services
 
 log = logging.getLogger(__name__)
@@ -100,6 +100,17 @@ async def async_update_all_addresses(
 
         await asyncio.sleep(15)
     [
-        await services.async_save_performance_result(single_performance, session)  # type: ignore
+        await services.async_save_performance_result(single_performance, session) # type: ignore
         for single_performance in performances
     ]
+
+
+async def run_ranking(session: sql_asyncio.AsyncSession) -> None:
+    all_addresses: list[
+        data.Address
+    ] = await services.async_find_all_converted_addresses(session)
+    await performance.async_save_address_ranking(
+        averaging_type=enums.AddressRankingType.HOUR,
+        session=session,
+        addresses=all_addresses,
+    )

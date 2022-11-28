@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import mock
 
 import pytest
@@ -48,3 +49,7 @@ def mock_finding_address(model_address: models.Address) -> mock.AsyncMock:
     session.execute.return_value = find_mock
     find_mock.scalars.return_value.first.return_value = model_address
     return session
+
+
+def create_datetime(hour: int = 1, minute: int = 1):
+    return datetime(year=2022, month=1, day=1, hour=hour, minute=minute, second=1)

@@ -12,6 +12,7 @@ from src.database import db
 def run_executor(
     session: sql_asyncio.AsyncSession, event_loop: asyncio.AbstractEventLoop
 ) -> None:
+    event_loop.run_until_complete(runner.async_update_all_addresses(session))
     scheduler = asyncio_scheduler.AsyncIOScheduler(event_loop=event_loop)
     scheduler.add_job(
         runner.async_update_all_addresses,

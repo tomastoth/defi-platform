@@ -19,6 +19,9 @@ class Address(db.Base):  # type: ignore
     performance_results = orm.relationship(
         "PerformanceRunResult", back_populates="address"
     )
+    address_performance_ranks = orm.relationship(
+        "AddressPerformanceRank", back_populates="address"
+    )
 
     def __repr__(self) -> str:
         return f"address: {self.address}, blockchain_type: {self.blockchain_type}"
@@ -56,3 +59,16 @@ class PerformanceRunResult(db.Base):  # type: ignore
     end_time = Column(DateTime(), nullable=False)
     address = orm.relationship(Address, back_populates="performance_results")
     address_id = Column(Integer, ForeignKey("address.id"))
+
+
+class AddressPerformanceRank(db.Base):  # type: ignore
+    __tablename__ = "address_performance_rank"
+    id = Column(Integer, primary_key=True)  # noqa
+    time_created = Column(DateTime(), default=datetime.now())
+    time_updated = Column(DateTime(), default=datetime.now())
+    performance = Column(Float, nullable=False)
+    time = Column(DateTime(), nullable=False)
+    address = orm.relationship(Address, back_populates="address_performance_ranks")
+    address_id = Column(Integer, ForeignKey("address.id"))
+    ranking_type = Column(String, nullable=False)
+    rank = Column(Integer, sqlalchemy.CheckConstraint("rank > 0"))

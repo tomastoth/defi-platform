@@ -13,3 +13,7 @@ class Blockchain(str, enum.Enum):
 
 class BlockchainType(str, enum.Enum):
     EVM = "EVM"
+
+
+class AddressRankingType(str, enum.Enum):
+    HOUR = "HOUR"

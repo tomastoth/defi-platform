@@ -1,10 +1,12 @@
+from datetime import datetime
+
 import pytest
 import sqlalchemy
 
-from src import data, performance, runner, time_utils
-from src.database import models
+from src import data, enums, performance, runner, time_utils
+from src.database import models, services
 from tests.test_unit import utils
-from tests.test_unit.fixtures import address  # noqa
+from tests.test_unit.fixtures import address, model_address  # noqa
 from tests.test_unit.utils import test_database_session  # noqa
 
 
@@ -162,4 +164,100 @@ async def test_running_performance_for_all_addresses() -> None:
         )
         assert best_performance_result.start_time
         assert best_performance_result.end_time
-        # ??? profit
+
+
+def create_performance_updates(
+    address: models.Address,
+    end_date_1: datetime,
+    end_date_2: datetime,
+    start_date_1: datetime,
+    start_date_2: datetime,
+    performances: list[float],
+) -> tuple[models.PerformanceRunResult, models.PerformanceRunResult]:
+    perf_1 = models.PerformanceRunResult(
+        performance=performances[0],
+        start_time=start_date_1,
+        end_time=end_date_1,
+        address=address,
+        address_id=address.id,
+    )
+    perf_2 = models.PerformanceRunResult(
+        performance=performances[1],
+        start_time=start_date_2,
+        end_time=end_date_2,
+        address=address,
+        address_id=address.id,
+    )
+    return perf_1, perf_2
+    # ??? profit
+
+
+@pytest.mark.asyncio
+async def test_performance_averaging(
+    address: data.Address, model_address: models.Address
+) -> None:
+    """
+    - create different options to export performance comparison
+        - for example 1 hour, 12 hours, 24 hours, 1 week
+    - all will have start time and end time
+    - for each, we select all PerformanceRunResult and average them
+    - we do this for all addresses
+    - after that we compare the averaged values
+    - we sort addresses by these metrics
+    - save the ranked_addresses ran
+    """
+    async_session = await utils.test_database_session()
+    async with async_session() as session:
+        performance_start_date_1 = utils.create_datetime(1, 15)
+        performance_end_date_1 = utils.create_datetime(1, 30)
+        performance_start_date_2 = utils.create_datetime(1, 30)
+        performance_end_date_2 = utils.create_datetime(1, 45)
+        time_now = datetime(2022, 1, 1, 2, 1, 1)
+        address = models.Address(address="0x123", blockchain_type="EVM")
+        address_2 = models.Address(address="0x124", blockchain_type="EVM")
+        data_address = services.convert_address_model(address)
+        data_address_2 = services.convert_address_model(address_2)
+        address_2.address = "0x124"
+        addr_1_performances = [1.0, 1.0]
+        addr_2_performances = [0.5, 0.5]
+        addr_1_perf_1, addr_1_perf_2 = create_performance_updates(
+            address,
+            performance_end_date_1,
+            performance_end_date_2,
+            performance_start_date_1,
+            performance_start_date_2,
+            addr_1_performances,
+        )
+        addr_2_perf_1, addr_2_perf_2 = create_performance_updates(
+            address_2,
+            performance_end_date_1,
+            performance_end_date_2,
+            performance_start_date_1,
+            performance_start_date_2,
+            addr_2_performances,
+        )
+        session.add_all([addr_1_perf_1, addr_1_perf_2, addr_2_perf_1, addr_2_perf_2])
+        await session.commit()
+        averaging_type = enums.AddressRankingType.HOUR
+
+        await performance.async_save_address_ranking(
+            averaging_type=averaging_type,
+            addresses=[data_address, data_address_2],
+            session=session,
+            time_now=time_now,
+        )
+        ranked_addresses: list[
+            data.AddressPerformanceRank
+        ] = await services.async_find_address_rankings(
+            ranking_type=enums.AddressRankingType.HOUR, time=time_now, session=session
+        )
+        first_address_avg_perf = ranked_addresses[0]
+        second_addres_avg_perf = ranked_addresses[1]
+        assert first_address_avg_perf.address == data_address
+        assert first_address_avg_perf.avg_performance == 1.0
+        assert first_address_avg_perf.rank == 1
+        assert first_address_avg_perf.time == time_now
+        assert first_address_avg_perf.ranking_type == enums.AddressRankingType.HOUR
+        assert second_addres_avg_perf.address == data_address_2
+        assert second_addres_avg_perf.avg_performance == 0.5
+        assert second_addres_avg_perf.rank == 2
