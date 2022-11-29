@@ -19,7 +19,7 @@ class Address(pydantic.BaseModel):
         default=enums.BlockchainType.EVM
     )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(f"{self.address}_{self.blockchain_type}")
 
 

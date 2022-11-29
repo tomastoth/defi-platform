@@ -17,3 +17,4 @@ class BlockchainType(str, enum.Enum):
 
 class AddressRankingType(str, enum.Enum):
     HOUR = "HOUR"
+    DAY = "DAY"

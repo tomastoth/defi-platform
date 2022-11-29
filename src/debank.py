@@ -86,7 +86,7 @@ class Debank:
         return sorted_aggregated_assets
 
     @staticmethod
-    def _adjust_headers() -> dict[str, any]:
+    def _adjust_headers() -> dict[str, typing.Any]:
         headers = Debank.HEADERS.copy()
         headers["user-agent"] = Debank.USER_AGENT_PROVIDER.get_user_agent()
         return headers

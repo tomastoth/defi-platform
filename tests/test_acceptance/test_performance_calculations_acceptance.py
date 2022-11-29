@@ -133,10 +133,10 @@ async def test_running_performance_for_all_addresses() -> None:
         mock_asset_provider = MockAssetProvider()
         # run getting of update
         await runner.async_update_all_addresses(
-            session, provide_assets=mock_asset_provider.get_assets  # type: ignore
+            session, provide_assets=mock_asset_provider.get_assets, sleep_time=0  # type: ignore
         )
         await runner.async_update_all_addresses(
-            session, provide_assets=mock_asset_provider.get_assets  # type: ignore
+            session, provide_assets=mock_asset_provider.get_assets, sleep_time=0  # type: ignore
         )
         # run comparison of last update to second last update
         # runner should fetch last and second last update for each address
@@ -193,7 +193,7 @@ def create_performance_updates(
 
 
 @pytest.mark.asyncio
-async def test_performance_averaging(
+async def test_address_ranking(
     address: data.Address, model_address: models.Address
 ) -> None:
     """
@@ -208,11 +208,11 @@ async def test_performance_averaging(
     """
     async_session = await utils.test_database_session()
     async with async_session() as session:
-        performance_start_date_1 = utils.create_datetime(1, 15)
-        performance_end_date_1 = utils.create_datetime(1, 30)
-        performance_start_date_2 = utils.create_datetime(1, 30)
-        performance_end_date_2 = utils.create_datetime(1, 45)
-        time_now = datetime(2022, 1, 1, 2, 1, 1)
+        performance_start_date_1 = utils.create_datetime(hour=1, minute=15)
+        performance_end_date_1 = utils.create_datetime(hour=1, minute=30)
+        performance_start_date_2 = utils.create_datetime(hour=1, minute=30)
+        performance_end_date_2 = utils.create_datetime(hour=1, minute=45)
+        time_now = utils.create_datetime(hour=2)
         address = models.Address(address="0x123", blockchain_type="EVM")
         address_2 = models.Address(address="0x124", blockchain_type="EVM")
         data_address = services.convert_address_model(address)
@@ -238,25 +238,25 @@ async def test_performance_averaging(
         )
         session.add_all([addr_1_perf_1, addr_1_perf_2, addr_2_perf_1, addr_2_perf_2])
         await session.commit()
-        averaging_type = enums.AddressRankingType.HOUR
-
-        await performance.async_save_address_ranking(
-            averaging_type=averaging_type,
-            addresses=[data_address, data_address_2],
+        await runner.async_run_ranking(
+            ranking_type=enums.AddressRankingType.HOUR,
             session=session,
-            time_now=time_now,
+            current_time=time_now,
         )
+        wanted_query_time = datetime(2022, 1, 1, 1, 0, 0)
         ranked_addresses: list[
             data.AddressPerformanceRank
         ] = await services.async_find_address_rankings(
-            ranking_type=enums.AddressRankingType.HOUR, time=time_now, session=session
+            ranking_type=enums.AddressRankingType.HOUR,
+            time=wanted_query_time,
+            session=session,
         )
         first_address_avg_perf = ranked_addresses[0]
         second_addres_avg_perf = ranked_addresses[1]
         assert first_address_avg_perf.address == data_address
         assert first_address_avg_perf.avg_performance == 1.0
         assert first_address_avg_perf.rank == 1
-        assert first_address_avg_perf.time == time_now
+        assert first_address_avg_perf.time == wanted_query_time
         assert first_address_avg_perf.ranking_type == enums.AddressRankingType.HOUR
         assert second_addres_avg_perf.address == data_address_2
         assert second_addres_avg_perf.avg_performance == 0.5

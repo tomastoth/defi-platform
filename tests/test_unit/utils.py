@@ -51,5 +51,14 @@ def mock_finding_address(model_address: models.Address) -> mock.AsyncMock:
     return session
 
 
-def create_datetime(hour: int = 1, minute: int = 1):
-    return datetime(year=2022, month=1, day=1, hour=hour, minute=minute, second=1)
+def create_datetime(
+    year: int = 2022,
+    month: int = 1,
+    day: int = 1,
+    hour: int = 1,
+    minute: int = 1,
+    second: int = 1,
+) -> datetime:
+    return datetime(
+        year=year, month=month, day=day, hour=hour, minute=minute, second=second
+    )

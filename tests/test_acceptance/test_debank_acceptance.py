@@ -1,5 +1,6 @@
 # type: ignore
 import json
+import os
 from unittest import mock
 
 import pytest
@@ -21,7 +22,7 @@ async def test_extracting_data_from_debank_for_single_address():
         with mock.patch("src.http_utils.async_request") as async_request:
             async_request.return_value = json.load(
                 open(
-                    f"{config.test_data_dir}\\debank_integrated_aggregated_balances.json"
+                    os.path.join(config.test_data_dir,"debank_integrated_aggregated_balances.json")
                 )
             )
             address_update = await debank.async_get_assets_for_address(

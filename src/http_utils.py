@@ -1,5 +1,6 @@
 import abc
 import logging
+import os
 import random
 import typing
 
@@ -20,7 +21,7 @@ class AbstractProxyProvider(abc.ABC):
 
 class ListProxyProvider(AbstractProxyProvider):
     def _load_proxies(self) -> None:
-        with open(f"{config.root_dir}/proxies.csv", "r") as proxies_file:
+        with open(os.path.join(config.root_dir, "proxies.csv"), "r") as proxies_file:
             for line in proxies_file:
                 split = line.split(",")
                 proxy = f"http://{split[0]}:{split[1]}"
