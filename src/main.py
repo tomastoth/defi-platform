@@ -5,7 +5,7 @@ from apscheduler.schedulers import asyncio as asyncio_scheduler
 from apscheduler.triggers import cron
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-from src import addresses, runner
+from src import addresses, enums, runner
 from src.database import db
 
 
@@ -17,8 +17,16 @@ def run_executor(
         runner.async_update_all_addresses,
         kwargs={"session": session},
         trigger=cron.CronTrigger.from_crontab("*/15 * * * *"),
-        minute=5,
-        second=0,
+    )
+    scheduler.add_job(
+        runner.async_run_ranking,
+        kwargs={"session": session, "ranking_type": enums.AddressRankingType.HOUR},
+        trigger=cron.CronTrigger.from_crontab("1 * * * *"),
+    )
+    scheduler.add_job(
+        runner.async_run_ranking,
+        kwargs={"session": session, "ranking_type": enums.AddressRankingType.DAY},
+        trigger=cron.CronTrigger.from_crontab("1 0 * * *"),
     )
     scheduler.start()
     event_loop.run_forever()

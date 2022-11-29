@@ -1,6 +1,9 @@
+from datetime import datetime
+
 import pytest
 
-from src import data, performance, time_utils
+from src import data, enums, performance, time_utils
+from tests.test_unit import utils
 from tests.test_unit.fixtures import address, model_address  # noqa
 from tests.test_unit.utils import create_aggregated_update
 
@@ -29,3 +32,31 @@ def test_asset_gaining_in_value(
         address=address,
     )
     assert performance_result.performance == pytest.approx(asset_performance)
+
+
+def test_extracting_dates_from_hourly_ranking_type() -> None:
+    mock_time = utils.create_datetime(hour=2, minute=0, second=11)
+    start_time, end_time = performance._get_times_for_comparison(
+        enums.AddressRankingType.HOUR, wanted_time=mock_time
+    )
+    assert start_time == utils.create_datetime()
+    assert end_time == utils.create_datetime(hour=2)
+
+
+def test_extracting_dates_from_daily_ranking_type() -> None:
+    mock_time = utils.create_datetime(day=2, hour=0, minute=0, second=1)
+    start_time, end_time = performance._get_times_for_comparison(
+        enums.AddressRankingType.DAY, wanted_time=mock_time
+    )
+    assert start_time == utils.create_datetime(hour=0, minute=0, second=1)
+    assert end_time == utils.create_datetime(hour=23, minute=59, second=59)
+
+
+def test_extracting_saving_time_for_ranking() -> None:
+    mock_time = datetime(year=2022, month=1, day=1, hour=2, minute=0, second=1)
+    saving_time = performance._get_saving_time_for_ranking(
+        address_ranking_type=enums.AddressRankingType.HOUR, current_time=mock_time
+    )
+    assert saving_time == datetime(
+        year=2022, month=1, day=1, hour=1, minute=0, second=0
+    )

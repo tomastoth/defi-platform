@@ -1,5 +1,6 @@
 import abc
 import logging
+import os
 import random
 import typing
 
@@ -19,15 +20,16 @@ class AbstractProxyProvider(abc.ABC):
 
 
 class ListProxyProvider(AbstractProxyProvider):
-    def __init__(self) -> None:
-        self._proxies: list[str] = []
-
-    def load_proxies(self) -> None:
-        with open(f"{config.root_dir}/proxies.csv", "r") as proxies_file:
+    def _load_proxies(self) -> None:
+        with open(os.path.join(config.root_dir, "proxies.csv"), "r") as proxies_file:
             for line in proxies_file:
                 split = line.split(",")
                 proxy = f"http://{split[0]}:{split[1]}"
                 self._proxies.append(proxy)
+
+    def __init__(self) -> None:
+        self._proxies: list[str] = []
+        self._load_proxies()
 
     def get_proxy(self) -> str:
         rnd = random.Random()
@@ -64,7 +66,30 @@ async def async_request_with_proxy(
     raise exceptions.InvalidHttpResponseError()
 
 
+class UserAgentProvider(abc.ABC):
+    @abc.abstractmethod
+    def get_user_agent(self) -> str:
+        ...
+
+
+class FileUserAgentProvider(UserAgentProvider):
+    @staticmethod
+    def _load_user_agents_from_file() -> list[str]:
+        with open(
+            f"{config.root_dir}/resources/user_agents.txt", "r"
+        ) as user_agents_file:
+            return [line.strip("\n") for line in user_agents_file]
+
+    def __init__(self) -> None:
+        self._headers = self._load_user_agents_from_file()
+        self._random = random.Random()
+
+    def get_user_agent(self) -> str:
+        random_num = self._random.randint(0, len(self._headers) - 1)
+        return self._headers[random_num]
+
+
 if __name__ == "__main__":
     list_proxy_provider = ListProxyProvider()
-    list_proxy_provider.load_proxies()
+    list_proxy_provider._load_proxies()
     print(list_proxy_provider.get_proxy())

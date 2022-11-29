@@ -16,3 +16,7 @@ class DebankDataMissingError(Exception):
 
 class InvalidHttpResponseError(Exception):
     pass
+
+
+class UnknownEnumError(Exception):
+    pass

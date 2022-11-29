@@ -67,6 +67,22 @@ async def async_find_all_addresses(
     return execute.scalars().all()  # type: ignore
 
 
+def convert_address_model(address_model: models.Address) -> data.Address:
+    return data.Address(
+        address=address_model.address,
+        blockchain_type=enums.BlockchainType(address_model.blockchain_type),
+    )
+
+
+async def async_find_all_converted_addresses(
+    session: sql_asyncio.AsyncSession,
+) -> list[data.Address]:
+    return [
+        convert_address_model(address)
+        for address in await async_find_all_addresses(session)
+    ]
+
+
 def convert_aggregated_model(
     aggregated_balance_model: models.AggregatedBalanceUpdate,
 ) -> data.AggregatedAsset:
@@ -106,13 +122,6 @@ async def async_find_address_last_aggregated_updates(
     return [convert_aggregated_model(model) for model in unconverted]
 
 
-def convert_address_model(address_model: models.Address) -> data.Address:
-    return data.Address(
-        address=address_model.address,
-        blockchain_type=enums.BlockchainType(address_model.blockchain_type),
-    )
-
-
 async def async_save_performance_result(
     performance_data: data.PerformanceResult, session: sql_asyncio.AsyncSession
 ) -> None:
@@ -126,4 +135,92 @@ async def async_save_performance_result(
         performance=performance_data.performance,
     )
     session.add(performance_model)
+    await session.commit()
+
+
+def convert_performance_model(
+    performance_model: models.PerformanceRunResult,
+) -> data.PerformanceResult:
+    address = convert_address_model(performance_model.address)
+    return data.PerformanceResult(
+        performance=performance_model.performance,
+        end_time=performance_model.end_time,
+        start_time=performance_model.start_time,
+        address=address,
+    )
+
+
+async def async_find_performance_results(
+    address: data.Address,
+    start_datetime: datetime,
+    end_datetime: datetime,
+    session: sql_asyncio.AsyncSession,
+) -> list[data.PerformanceResult]:
+    model_address = await async_find_address(address, session)
+    if not model_address:
+        raise exceptions.AddressNotFoundError()
+    query = sqlalchemy.select(models.PerformanceRunResult).where(
+        models.PerformanceRunResult.address_id == model_address.id,
+        models.PerformanceRunResult.start_time >= start_datetime,
+        models.PerformanceRunResult.end_time <= end_datetime,
+    )
+    exec_stmt = await session.execute(query)
+
+    performance_models = exec_stmt.scalars().all()
+    return [
+        convert_performance_model(performance_model)
+        for performance_model in performance_models
+    ]
+
+
+def convert_address_rank_model(
+    rank_model: models.AddressPerformanceRank,
+) -> data.AddressPerformanceRank:
+    return data.AddressPerformanceRank(
+        address=convert_address_model(rank_model.address),
+        ranking_type=enums.AddressRankingType(rank_model.ranking_type),
+        time=rank_model.time,
+        avg_performance=rank_model.performance,
+        rank=rank_model.rank,
+    )
+
+
+async def async_find_address_rankings(
+    ranking_type: enums.AddressRankingType,
+    time: datetime,
+    session: sql_asyncio.AsyncSession,
+) -> list[data.AddressPerformanceRank]:
+    query = sqlalchemy.select(models.AddressPerformanceRank).where(
+        models.AddressPerformanceRank.time == time,
+        models.AddressPerformanceRank.ranking_type == ranking_type.value,
+    )
+    query_exec = await session.execute(query)
+    rank_models = query_exec.scalars().all()
+    return [convert_address_rank_model(rank_model) for rank_model in rank_models]
+
+
+async def async_convert_address_rank_to_model(
+    address_rank: data.AddressPerformanceRank, session: sql_asyncio.AsyncSession
+) -> models.AddressPerformanceRank:
+    model_address = await async_find_address(address_rank.address, session)
+    if not model_address:
+        raise exceptions.AddressNotFoundError()
+    return models.AddressPerformanceRank(
+        performance=address_rank.avg_performance,
+        time=address_rank.time,
+        address=model_address,
+        address_id=model_address.id,
+        ranking_type=str(address_rank.ranking_type.value),
+        rank=address_rank.rank,
+    )
+
+
+async def async_save_address_ranks(
+    address_ranks: list[data.AddressPerformanceRank], session: sql_asyncio.AsyncSession
+) -> None:
+    rank_models = [
+        await async_convert_address_rank_to_model(address_rank, session)
+        for address_rank in address_ranks
+    ]
+    session.add_all(rank_models)
     await session.commit()

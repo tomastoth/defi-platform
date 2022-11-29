@@ -21,7 +21,6 @@ class Debank:
         "authority": "api.debank.com",
         "accept": "*/*",
         "accept-language": "en",
-        "account": '{"random_at":1669564020,"random_id":"4cb9e160803a45d394015cedd00d5fef","user_addr":null}',
         "cache-control": "no-cache",
         "dnt": "1",
         "origin": "https://debank.com",
@@ -35,13 +34,9 @@ class Debank:
         "sec-fetch-site": "same-site",
         "source": "web",
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
-        "x-api-nonce": "n_t2eUxoa3cTlI6oUGZPu9FVfd0rxxcE2ctP4Gu4S8",
-        "x-api-sign": "1bd86b3509314cce80e9758290223caec62ee3bb66893defc81c576445ca36ab",
-        "x-api-ts": "1669564022",
-        "x-api-ver": "v2",
     }
     PROXY_PROVIDER = http_utils.ListProxyProvider()
-    PROXY_PROVIDER.load_proxies()
+    USER_AGENT_PROVIDER = http_utils.FileUserAgentProvider()
 
     @staticmethod
     async def async_get_blockchain_assets(
@@ -91,9 +86,9 @@ class Debank:
         return sorted_aggregated_assets
 
     @staticmethod
-    def _adjust_headers() -> dict[str, str]:
+    def _adjust_headers() -> dict[str, typing.Any]:
         headers = Debank.HEADERS.copy()
-        headers["x-api-ts"] = str(int(time.time()))
+        headers["user-agent"] = Debank.USER_AGENT_PROVIDER.get_user_agent()
         return headers
 
     @staticmethod

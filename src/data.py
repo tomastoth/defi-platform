@@ -19,6 +19,9 @@ class Address(pydantic.BaseModel):
         default=enums.BlockchainType.EVM
     )
 
+    def __hash__(self) -> int:
+        return hash(f"{self.address}_{self.blockchain_type}")
+
 
 class AggregatedUsdAsset(UsdValue):
     symbol: str
@@ -47,3 +50,11 @@ class PerformanceResult(pydantic.BaseModel):
     end_time: datetime
     start_time: datetime
     address: Address
+
+
+class AddressPerformanceRank(pydantic.BaseModel):
+    address: Address
+    ranking_type: enums.AddressRankingType
+    time: datetime
+    avg_performance: float
+    rank: int

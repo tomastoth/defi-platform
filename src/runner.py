@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-from src import data, debank, performance, spec, time_utils
+from src import data, debank, enums, performance, spec, time_utils
 from src.database import services
 
 log = logging.getLogger(__name__)
@@ -79,6 +79,7 @@ async def async_run_single_address(
 async def async_update_all_addresses(
     session: sql_asyncio.AsyncSession,
     provide_assets: spec.AssetProvider = debank.async_provide_aggregated_assets,
+    sleep_time: int = 15,
 ) -> None:
     run_time = time_utils.get_time_now()
     run_time_dt = time_utils.get_datetime_from_ts(run_time)
@@ -98,8 +99,20 @@ async def async_update_all_addresses(
             run_time=run_time,
         )
 
-        await asyncio.sleep(15)
+        await asyncio.sleep(sleep_time)
     [
         await services.async_save_performance_result(single_performance, session)  # type: ignore
         for single_performance in performances
     ]
+
+
+async def async_run_ranking(
+    ranking_type: enums.AddressRankingType,
+    session: sql_asyncio.AsyncSession,
+    current_time: datetime = datetime.now(),
+) -> None:
+    await performance.async_save_address_ranking(
+        ranking_type=ranking_type,
+        session=session,
+        run_time=current_time,
+    )

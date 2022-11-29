@@ -1,4 +1,5 @@
 import json
+import os
 import unittest.mock
 
 import pytest
@@ -21,7 +22,7 @@ async def test_parsing_protocol_on_blockchain_balance_of_address(
     db = debank.Debank()
     with unittest.mock.patch("src.http_utils.async_request") as async_request:
         async_request.return_value = json.load(
-            open(f"{config.config.test_data_dir}\\debank_balances.json")
+            open(os.path.join(config.config.test_data_dir, "debank_balances.json"))
         )
         blockchain_assets = await db.async_get_blockchain_assets(address)
     eth_on_ftm = blockchain_assets[0]
