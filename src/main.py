@@ -1,16 +1,19 @@
 import asyncio
 import logging
 
+import dotenv
+
+dotenv.load_dotenv()
 from apscheduler.schedulers import asyncio as asyncio_scheduler
 from apscheduler.triggers import cron
+from defi_common.database import db
 from sqlalchemy.ext import asyncio as sql_asyncio
 
 from src import addresses, enums, runner
-from src.database import db
 
 
 def run_executor(
-    session: sql_asyncio.AsyncSession, event_loop: asyncio.AbstractEventLoop
+        session: sql_asyncio.AsyncSession, event_loop: asyncio.AbstractEventLoop
 ) -> None:
     scheduler = asyncio_scheduler.AsyncIOScheduler(event_loop=event_loop)
     scheduler.add_job(

@@ -2,12 +2,13 @@ from datetime import datetime
 from unittest import mock
 
 import pytest
+from src.config import config
+from defi_common.database import db, models
+from defi_common.dbconfig import db_config
 from sqlalchemy import orm
 from sqlalchemy.ext import asyncio as sql_asyncio
 
 from src import data
-from src.config import config
-from src.database import db, models
 from tests.test_unit.fixtures import model_address  # noqa
 
 
@@ -32,7 +33,7 @@ def create_aggregated_update(
 
 @pytest.mark.asyncio
 async def test_database_session() -> orm.sessionmaker:
-    engine = sql_asyncio.create_async_engine(config.test_db_url, echo=True)
+    engine = sql_asyncio.create_async_engine(db_config.test_db_url, echo=True)
     async with engine.begin() as conn:
         db.Base.metadata.bind = conn
         await conn.run_sync(db.Base.metadata.drop_all)

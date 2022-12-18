@@ -1,13 +1,14 @@
 from datetime import datetime
 
+import defi_common.dbconfig
 import pytest
 import sqlalchemy
+from defi_common.database import models
 
 from src import data, enums, performance, runner, time_utils
-from src.database import models, services
+from src.database import services
 from tests.test_unit import utils
 from tests.test_unit.fixtures import address, model_address  # noqa
-from tests.test_unit.utils import test_database_session  # noqa
 
 
 def test_performance_calculations_acceptance(address: data.Address) -> None:

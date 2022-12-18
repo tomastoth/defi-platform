@@ -2,9 +2,9 @@ from datetime import datetime
 from unittest import mock
 
 import pytest
+from defi_common.database import models
 
 from src import data, runner
-from src.database import models
 from tests.test_unit import utils
 from tests.test_unit.fixtures import address, model_address  # noqa
 
