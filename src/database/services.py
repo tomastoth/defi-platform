@@ -1,10 +1,10 @@
 from datetime import datetime
 
 import sqlalchemy
+from defi_common.database import models
 from sqlalchemy.ext import asyncio as sql_asyncio
 
 from src import data, enums, exceptions, time_utils
-from src.database import models
 from src.exceptions import AddressAlreadyExistsError, AddressNotCreatedError
 
 

@@ -4,7 +4,9 @@ version = "0.1.0"
 description = ""
 authors = ["Tomas Toth <tomas.toth004@gmail.com>"]
 license = "MIT"
-packages = [{"include"="src"}]
+packages = [
+    { "include" = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -20,12 +22,22 @@ ruff = "^0.0.128"
 ssort = "^0.11.6"
 alembic = "^1.8.1"
 apscheduler = "^3.9.1.post1"
+defi-common = {path = "../defi-common"}
+playwright = "^1.28.0"
+stem = "^1.8.1"
+requests = "^2.28.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.10.0"
 wps-light = "^0.16.1"
 mypy = "^0.991"
 pre-commit = "^2.20.0"
+
+[[tool.poetry.source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+default = false
+secondary = false
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -38,14 +50,14 @@ ignore_missing_imports = true
 
 [tool.ruff]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
     # "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
     "N",
-#    "D",
+    #    "D",
     "U",
     "A",
     "YTT",
@@ -54,7 +66,7 @@ select = [
     "M"
 ]
 ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
 ]
 

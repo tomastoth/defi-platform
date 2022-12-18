@@ -4,7 +4,7 @@ import unittest.mock
 
 import pytest
 
-from src import config, data, debank, enums
+from src import data, debank, enums, config
 from tests.test_unit.fixtures import address  # noqa
 
 

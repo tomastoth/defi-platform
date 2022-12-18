@@ -5,7 +5,6 @@ import pytest
 from src import data, enums, performance, time_utils
 from tests.test_unit import utils
 from tests.test_unit.fixtures import address, model_address  # noqa
-from tests.test_unit.utils import create_aggregated_update
 
 
 @pytest.mark.parametrize(
@@ -18,10 +17,10 @@ def test_asset_gaining_in_value(
     asset_performance: float,
     address: data.Address,
 ) -> None:
-    old_update = create_aggregated_update(
+    old_update = utils.create_aggregated_update(
         value_usd=old_value_usd, amount=1, price=old_value_usd, value_pct=100.0
     )
-    new_update = create_aggregated_update(
+    new_update = utils.create_aggregated_update(
         value_usd=new_value_usd, amount=1, price=new_value_usd, value_pct=100.0
     )
     performance_result = performance.calculate_performance(

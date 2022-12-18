@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from src.database import models, services
+from defi_common.database import models
+
+from src.database import services
 from tests.test_unit.fixtures import model_address  # noqa
 
 

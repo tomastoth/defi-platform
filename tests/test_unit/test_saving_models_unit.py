@@ -2,10 +2,11 @@ from datetime import datetime
 from unittest import mock
 
 import pytest
+from defi_common.database import models
 
 import src.exceptions
 from src import data
-from src.database import models, services
+from src.database import services
 from tests.test_unit import utils
 from tests.test_unit.fixtures import model_address  # noqa
 
