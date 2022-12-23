@@ -17,7 +17,7 @@ async def async_find_address(
         models.Address.blockchain_type == str(address.blockchain_type.value),
     )
     found = await session.execute(query)
-    return found.scalars().first()  # type: ignore
+    return found.scalars().first()
 
 
 async def async_save_address(
@@ -122,6 +122,32 @@ async def async_find_address_last_aggregated_updates(
     return [convert_aggregated_model(model) for model in unconverted]
 
 
+async def async_find_aggregated_updates(
+    address: data.Address, at_time: datetime, session: sql_asyncio.AsyncSession
+) -> list[data.AggregatedAsset]:
+    address_model = await async_find_address(address, session)
+    if not address_model:
+        raise exceptions.AddressNotFoundError()
+    update_time_closest_to_wanted_time_query = (
+        sqlalchemy.select(models.AggregatedBalanceUpdate)
+        .where(models.AggregatedBalanceUpdate.timestamp <= at_time.timestamp())
+        .order_by(models.AggregatedBalanceUpdate.timestamp.desc())
+        .limit(1)
+    )
+
+    time_exec = await session.execute(update_time_closest_to_wanted_time_query)
+    time_update = time_exec.scalars().first()
+    if not time_update:
+        return []
+    wanted_time = time_update.timestamp
+    updates_query = sqlalchemy.select(models.AggregatedBalanceUpdate).where(
+        models.AggregatedBalanceUpdate.address_id == address_model.id,
+        models.AggregatedBalanceUpdate.timestamp == wanted_time,
+    )
+    updates_exec = await session.execute(updates_query)
+    return [convert_aggregated_model(model) for model in updates_exec.scalars().all()]
+
+
 async def async_save_performance_result(
     performance_data: data.PerformanceResult, session: sql_asyncio.AsyncSession
 ) -> None:
@@ -178,7 +204,7 @@ def convert_address_rank_model(
 ) -> data.AddressPerformanceRank:
     return data.AddressPerformanceRank(
         address=convert_address_model(rank_model.address),
-        ranking_type=enums.AddressRankingType(rank_model.ranking_type),
+        ranking_type=enums.RunTimeType(rank_model.ranking_type),
         time=rank_model.time,
         avg_performance=rank_model.performance,
         rank=rank_model.rank,
@@ -186,7 +212,7 @@ def convert_address_rank_model(
 
 
 async def async_find_address_rankings(
-    ranking_type: enums.AddressRankingType,
+    ranking_type: enums.RunTimeType,
     time: datetime,
     session: sql_asyncio.AsyncSession,
 ) -> list[data.AddressPerformanceRank]:
@@ -224,3 +250,44 @@ async def async_save_address_ranks(
     ]
     session.add_all(rank_models)
     await session.commit()
+
+
+async def async_save_coin_changes(
+    coin_changes_list: list[data.AssetOwnedChange],
+    save_time: datetime,
+    run_time_type: enums.RunTimeType,
+    session: sql_asyncio.AsyncSession,
+) -> None:
+    to_save: list[models.CoinChangeRank] = []
+    for coin_change in coin_changes_list:
+        coin_change_rank = models.CoinChangeRank(
+            rank=coin_change.rank,
+            time=save_time,
+            pct_change=coin_change.pct_change,
+            ranking_type=run_time_type.value,
+            symbol=coin_change.symbol,
+        )
+        to_save.append(coin_change_rank)
+    session.add_all(to_save)
+    await session.commit()
+
+
+def convert_coin_change_model(model: models.CoinChangeRank) -> data.AssetOwnedChange:
+    return data.AssetOwnedChange(
+        rank=model.rank,
+        symbol=model.symbol,
+        pct_change=model.pct_change,
+        run_type=enums.RunTimeType(model.ranking_type),
+        time=model.time,
+    )
+
+
+async def async_find_coin_ranking_by_time(
+    at_time: datetime, session: sql_asyncio.AsyncSession
+) -> list[data.AssetOwnedChange]:
+    query = sqlalchemy.select(models.CoinChangeRank).where(
+        models.CoinChangeRank.time == at_time
+    )
+    coin_change_exec = await session.execute(query)
+    coin_rank_models = coin_change_exec.scalars().all()
+    return [convert_coin_change_model(model) for model in coin_rank_models]

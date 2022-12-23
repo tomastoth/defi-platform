@@ -1,10 +1,6 @@
-import json
-import os
-import unittest.mock
-
 import pytest
 
-from src import data, debank, enums, config
+from src import data, debank
 from tests.test_unit.fixtures import address  # noqa
 
 
@@ -13,21 +9,6 @@ from tests.test_unit.fixtures import address  # noqa
 async def test_requesting_user_portfolio(address: data.Address) -> None:
     db = debank.Debank()
     await db.async_get_assets_for_address(address=address, run_time=100)
-
-
-@pytest.mark.asyncio
-async def test_parsing_protocol_on_blockchain_balance_of_address(
-    address: data.Address,
-) -> None:
-    db = debank.Debank()
-    with unittest.mock.patch("src.http_utils.async_request") as async_request:
-        async_request.return_value = json.load(
-            open(os.path.join(config.config.test_data_dir, "debank_balances.json"))
-        )
-        blockchain_assets = await db.async_get_blockchain_assets(address)
-    eth_on_ftm = blockchain_assets[0]
-    assert eth_on_ftm.value_usd == pytest.approx(356, rel=1e1)
-    assert eth_on_ftm.blockchain == enums.Blockchain.FTM
 
 
 def test_calculating_pct_of_aggregated_assets() -> None:

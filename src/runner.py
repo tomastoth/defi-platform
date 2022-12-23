@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-from src import data, debank, enums, performance, spec, time_utils
+from src import coin_changes, data, debank, enums, performance, spec, time_utils
 from src.database import services
 
 log = logging.getLogger(__name__)
@@ -101,20 +101,27 @@ async def async_update_all_addresses(
 
         await asyncio.sleep(sleep_time)
     [
-        await services.async_save_performance_result(single_performance, session)  # type: ignore
+        await services.async_save_performance_result(single_performance, session)
+        # type: ignore
         for single_performance in performances
     ]
 
 
-async def async_run_ranking(
-    ranking_type: enums.AddressRankingType,
+async def async_run_address_ranking(
+    time_type: enums.RunTimeType,
     session: sql_asyncio.AsyncSession,
     current_time: datetime = datetime.now(),
 ) -> None:
     await performance.async_save_address_ranking(
-        ranking_type=ranking_type,
+        ranking_type=time_type,
         session=session,
         run_time=current_time,
     )
 
 
+async def async_run_coin_change_ranking(
+    time_type: enums.RunTimeType,
+    session: sql_asyncio.AsyncSession,
+    current_time: datetime = datetime.now(),
+) -> None:
+    await coin_changes.async_run_coin_ranking(time_type, current_time, session)

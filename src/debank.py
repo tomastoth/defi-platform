@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import time
 import typing
 
 from playwright.async_api import async_playwright
@@ -27,22 +29,27 @@ class Debank:
         "origin": "https://debank.com",
         "pragma": "no-cache",
         "referer": "https://debank.com/",
-        "sec-ch-ua": '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
         "sec-ch-ua-mobile": "?0",
         "sec-ch-ua-platform": '"Windows"',
         "sec-fetch-dest": "empty",
         "sec-fetch-mode": "cors",
         "sec-fetch-site": "same-site",
         "source": "web",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+        "Connection": "keep-alive",
+        "x-api-ver": "v2",
     }
-    PROXY_PROVIDER = http_utils.RedisProxyProvider()
-    USER_AGENT_PROVIDER = http_utils.FileUserAgentProvider()
 
+    def __init__(
+        self,
+        proxy_provider: http_utils.ProxyProvider = http_utils.RedisProxyProvider(),
+        user_agent_provider: http_utils.UserAgentProvider = http_utils.FileUserAgentProvider(),
+    ):
+        self._proxy_provider = proxy_provider
+        self._user_agent_provider = user_agent_provider
 
     @classmethod
     async def async_get_blockchain_assets(
-            cls, address: data.Address
+        cls, address: data.Address
     ) -> list[data.BlockchainAsset]:
         async with async_playwright() as p:
             url = f"{Debank.DEBANK_URL}token/cache_balance_list?user_addr={address.address}"
@@ -55,7 +62,9 @@ class Debank:
             return balances
 
     @staticmethod
-    def extract_wallet_assets_from_request(balances_json) -> list[spec.UsdValue]:
+    def extract_wallet_assets_from_request(
+        balances_json: dict[str, typing.Any]
+    ) -> list[spec.UsdValue]:
         if "data" not in balances_json:
             raise DebankDataInvalid()
         balances: list[data.BlockchainAsset] = []
@@ -66,26 +75,33 @@ class Debank:
             )
             if blockchain_wallet_asset:
                 balances.append(blockchain_wallet_asset)
-        sorted_blockchain_wallet_assets = Debank._sort_by_value_usd(balances)
-        return sorted_blockchain_wallet_assets
+        return Debank._sort_by_value_usd(balances)
 
-    @staticmethod
+    def _adjust_headers(self) -> dict[str, typing.Any]:
+        headers = Debank.HEADERS.copy()
+        headers["user-agent"] = self._user_agent_provider.get_user_agent()
+        return headers
+
     async def _async_get_aggregated_usd_assets(
-            address: data.Address,
+        self,
+        address: data.Address,
     ) -> list[data.AggregatedUsdAsset]:
-        url = f"{Debank.DEBANK_URL}/asset/classify?user_addr={address.address}"
+        url = f"{Debank.DEBANK_URL}asset/classify?user_addr={address.address}"
+        log.info(f"before getting url {url}")
+        headers = self._adjust_headers()
         try:
             overall_assets_json = await http_utils.sync_request_with_proxy(
                 url,
-                proxy_provider=Debank.PROXY_PROVIDER,
-                headers={},
-                randomize_headers=True
+                proxy_provider=self._proxy_provider,
+                headers=headers,
+                randomize_headers=True,
             )
         except exceptions.InvalidHttpResponseError as e:
             log.warning(
                 f"Could not receive data for address {address.address}, skipping update, e: {e}"
             )
             return []
+        log.info(f"after getting url {url}")
         if "data" not in overall_assets_json:
             raise DebankDataInvalid()
         wallet_data = overall_assets_json["data"]
@@ -99,16 +115,10 @@ class Debank:
         return sorted_aggregated_assets
 
     @staticmethod
-    def _adjust_headers() -> dict[str, typing.Any]:
-        headers = Debank.HEADERS.copy()
-        headers["user-agent"] = Debank.USER_AGENT_PROVIDER.get_user_agent()
-        return headers
-
-    @staticmethod
     def _add_pct_value(
-            aggregated_usd_assets: list[data.AggregatedUsdAsset],
-            sum_value_usd: float,
-            run_time: int,
+        aggregated_usd_assets: list[data.AggregatedUsdAsset],
+        sum_value_usd: float,
+        run_time: int,
     ) -> list[data.AggregatedAsset]:
         aggregated_assets: list[data.AggregatedAsset] = []
         for aggregated_usd_asset in aggregated_usd_assets:
@@ -125,7 +135,7 @@ class Debank:
         return aggregated_assets
 
     async def async_get_assets_for_address(
-            self, address: data.Address, run_time: int
+        self, address: data.Address, run_time: int
     ) -> data.AddressUpdate | None:
         aggregated_usd_assets = await self._async_get_aggregated_usd_assets(
             address=address
@@ -148,7 +158,7 @@ class Debank:
 
     @staticmethod
     def _extract_aggregated_usd_asset(
-            coin: dict[str, typing.Any]
+        coin: dict[str, typing.Any]
     ) -> data.AggregatedUsdAsset:
         token_amount = coin["amount"]
         symbol = coin["symbol"]
@@ -176,7 +186,7 @@ class Debank:
 
     @staticmethod
     def _extract_blockchain_wallet_asset(
-            wallet_data: typing.Dict[str, typing.Any]
+        wallet_data: typing.Dict[str, typing.Any]
     ) -> typing.Optional[data.BlockchainAsset]:
         try:
             token_amount = float(wallet_data["amount"])
@@ -204,20 +214,36 @@ class Debank:
 
     @staticmethod
     def _sort_by_value_usd(
-            value_usd_list: list[spec.UsdValue],
+        value_usd_list: list[spec.UsdValue],
     ) -> list[spec.UsdValue]:
         value_usd_list.sort(key=lambda x: x.value_usd, reverse=True)
         return value_usd_list
 
     @staticmethod
     def _calc_sum_usd_value(
-            aggregated_usd_assets: list[data.AggregatedUsdAsset],
+        aggregated_usd_assets: list[data.AggregatedUsdAsset],
     ) -> float:
         return sum([asset.value_usd for asset in aggregated_usd_assets])
 
 
 async def async_provide_aggregated_assets(
-        address: data.Address, run_timestamp: int
+    address: data.Address, run_timestamp: int
 ) -> data.AddressUpdate | None:
     debank = Debank()
     return await debank.async_get_assets_for_address(address, run_timestamp)
+
+
+if __name__ == "__main__":
+    dbnk = Debank()
+    counter = 0
+    while counter < 10:
+        result = asyncio.run(
+            dbnk._async_get_aggregated_usd_assets(
+                address=data.Address(
+                    address="0xeee7fa9f2148e9499d6d857dc09e29864203b138"
+                )
+            )
+        )
+        print(result)
+        time.sleep(5)
+        counter += 1

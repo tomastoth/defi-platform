@@ -4,7 +4,8 @@ import os
 from unittest import mock
 
 import pytest
-from src import data, enums
+
+from src import data, enums, http_utils
 from src.config import config
 from src.debank import Debank
 
@@ -12,13 +13,13 @@ from src.debank import Debank
 # @pytest.mark.skip(reason="not yet implemented")
 @pytest.mark.asyncio
 async def test_extracting_data_from_debank_for_single_address():
-    debank = Debank()
+    debank = Debank(proxy_provider=http_utils.EmptyProxyProvider())
     address = data.Address(address="0x123", blockchain_type=enums.BlockchainType.EVM)
     with mock.patch(
         "src.debank.Debank.async_get_blockchain_assets"
     ) as get_blockchain_assets:
         get_blockchain_assets.return_value = []
-        with mock.patch("src.http_utils.async_request") as async_request:
+        with mock.patch("src.http_utils.sync_request_with_proxy") as async_request:
             async_request.return_value = json.load(
                 open(
                     os.path.join(

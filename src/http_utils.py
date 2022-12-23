@@ -9,7 +9,6 @@ import typing
 import aiohttp
 import requests
 from aiohttp import client_exceptions
-from requests import JSONDecodeError
 
 from src import exceptions
 from src.config import config
@@ -17,21 +16,26 @@ from src.config import config
 log = logging.getLogger(__name__)
 
 
-class AbstractProxyProvider(abc.ABC):
+class ProxyProvider(abc.ABC):
     @abc.abstractmethod
     def get_proxy(self) -> str:
         ...
 
 
-class RedisProxyProvider(AbstractProxyProvider):
-    URL = "http://localhost:5010/get?type=http"
+class EmptyProxyProvider(ProxyProvider):
+    def get_proxy(self) -> str:
+        return ""
+
+
+class RedisProxyProvider(ProxyProvider):
+    URL = "http://localhost:5555/random"
 
     def get_proxy(self) -> str:
-        json_data = requests.get(self.URL).json()
-        return f'http://{json_data["proxy"]}'
+        proxy = requests.get(self.URL).text.strip()
+        return f"http://{proxy}"
 
 
-class ListProxyProvider(AbstractProxyProvider):
+class ListProxyProvider(ProxyProvider):
     def _load_proxies(self) -> None:
         with open(os.path.join(config.root_dir, "proxies.csv"), "r") as proxies_file:
             for line in proxies_file:
@@ -50,7 +54,7 @@ class ListProxyProvider(AbstractProxyProvider):
 
 
 async def async_request(
-        url: str, headers: dict[str, str] | None = None, proxy: str | None = None
+    url: str, headers: dict[str, str] | None = None, proxy: str | None = None
 ) -> typing.Any:
     if not headers:
         headers = {}
@@ -63,10 +67,10 @@ async def async_request(
 
 
 async def async_request_with_proxy(
-        url: str,
-        proxy_provider: AbstractProxyProvider,
-        headers: dict[str, str] | None = None,
-        max_retries: int = 5,
+    url: str,
+    proxy_provider: ProxyProvider,
+    headers: dict[str, str] | None = None,
+    max_retries: int = 5,
 ) -> typing.Any:
     retries = 0
     while retries < max_retries:
@@ -74,8 +78,9 @@ async def async_request_with_proxy(
         try:
             return await async_request(url, headers, proxy)
         except (
-                exceptions.InvalidHttpResponseError,
-                client_exceptions.ClientError) as e:
+            exceptions.InvalidHttpResponseError,
+            client_exceptions.ClientError,
+        ) as e:
             log.warning(e)
             retries += 1
     raise exceptions.InvalidHttpResponseError()
@@ -91,7 +96,7 @@ class FileUserAgentProvider(UserAgentProvider):
     @staticmethod
     def _load_user_agents_from_file() -> list[str]:
         with open(
-                f"{config.root_dir}/resources/user_agents.txt", "r"
+            f"{config.root_dir}/resources/user_agents.txt", "r"
         ) as user_agents_file:
             return [line.strip("\n") for line in user_agents_file]
 
@@ -106,18 +111,20 @@ class FileUserAgentProvider(UserAgentProvider):
         return self._headers[random_num]
 
 
-def _randomize_headers(headers, user_agent_provider: UserAgentProvider):
+def _randomize_headers(
+    headers: dict[str, str], user_agent_provider: UserAgentProvider
+) -> dict[str, str]:
     headers["user-agent"] = user_agent_provider.get_user_agent()
     return headers
 
 
 async def sync_request_with_proxy(
-        url: str,
-        proxy_provider: AbstractProxyProvider,
-        headers: dict[str, str] | None = None,
-        max_retries: int = 5,
-        randomize_headers: bool = False,
-        user_agent_provider: UserAgentProvider = FileUserAgentProvider()
+    url: str,
+    proxy_provider: ProxyProvider,
+    headers: dict[str, str] | None = None,
+    max_retries: int = 8,
+    randomize_headers: bool = False,
+    user_agent_provider: UserAgentProvider = FileUserAgentProvider(),
 ) -> typing.Any:
     if not headers:
         headers = {}
@@ -126,14 +133,19 @@ async def sync_request_with_proxy(
     retries = 0
     while retries < max_retries:
         proxy = proxy_provider.get_proxy()
-        print(f"UA: {headers['user-agent']}, proxy: {proxy}")
         try:
-            response = requests.get(url, headers=headers, proxies={"proxy": proxy})
-            if response.status_code != 200:
+            response = requests.get(
+                url, headers=headers, proxies={"https": proxy}, timeout=5
+            )
+            status_code = response.status_code
+            if status_code == 429:
+                log.warning(f"Received 429 from url: {url}")
+            if status_code != 200:
                 retries += 1
+                continue
             return response.json()
-        except (exceptions.InvalidHttpResponseError, JSONDecodeError) as e:
-            log.warning(e)
+        except Exception as e:
+            # log.warning(e)
             retries += 1
     raise exceptions.InvalidHttpResponseError()
 
@@ -145,14 +157,15 @@ if __name__ == "__main__":
         while True:
             try:
                 result = asyncio.run(
-                    sync_request_with_proxy("https://api.debank.com/token/cache_balance_list?user_addr=0x7a16ff8270133f063aab6c9977183d9e72835428",
-                                            RedisProxyProvider(), randomize_headers=True))
-
+                    sync_request_with_proxy(
+                        "",
+                        RedisProxyProvider(),
+                        randomize_headers=True,
+                    )
+                )
                 print(result)
                 counter += 1
                 time.sleep(5)
                 break
             except Exception as e:
                 print(e, e.__class__.__name__)
-
-

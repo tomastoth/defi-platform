@@ -5,7 +5,8 @@ description = ""
 authors = ["Tomas Toth <tomas.toth004@gmail.com>"]
 license = "MIT"
 packages = [
-    { "include" = "src" }
+    { "include" = "src" },
+    { "include" = "defi-common" }
 ]
 
 [tool.poetry.dependencies]
@@ -21,11 +22,11 @@ pytest-asyncio = "^0.20.2"
 ruff = "^0.0.128"
 ssort = "^0.11.6"
 alembic = "^1.8.1"
-apscheduler = "^3.9.1.post1"
-defi-common = {path = "../defi-common"}
+apscheduler = "3.8.1"
 playwright = "^1.28.0"
 stem = "^1.8.1"
-requests = "^2.28.1"
+requests = { extras = ["socks"], version = "^2.28.1" }
+defi-common = { path = "./defi-common", develop = true }
 
 [tool.poetry.dev-dependencies]
 black = "^22.10.0"

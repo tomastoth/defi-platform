@@ -1,8 +1,8 @@
 from datetime import datetime
 from unittest import mock
 
+import dotenv
 import pytest
-from src.config import config
 from defi_common.database import db, models
 from defi_common.dbconfig import db_config
 from sqlalchemy import orm
@@ -13,26 +13,45 @@ from tests.test_unit.fixtures import model_address  # noqa
 
 
 def create_aggregated_update(
-    value_usd: float, amount: float, price: float, value_pct: float
+    value_usd: float, amount: float, price: float, value_pct: float, symbol: str = "ETH"
 ) -> data.AddressUpdate:
     return data.AddressUpdate(
         value_usd=value_usd,
         blockchain_wallet_assets=[],
         aggregated_assets=[
             data.AggregatedAsset(
-                symbol="ETH",
+                symbol=symbol,
                 amount=amount,
                 price=price,
                 timestamp=101,
                 value_pct=value_pct,
-                value_usd=value_pct,
+                value_usd=value_usd,
             )
         ],
     )
 
 
+def create_aggregated_asset(
+    symbol: str,
+    amount: float,
+    price: float,
+    value_pct: float,
+    value_usd: float,
+    timestamp: int = 101,
+) -> data.AggregatedAsset:
+    return data.AggregatedAsset(
+        symbol=symbol,
+        amount=amount,
+        price=price,
+        timestamp=timestamp,
+        value_pct=value_pct,
+        value_usd=value_usd,
+    )
+
+
 @pytest.mark.asyncio
 async def test_database_session() -> orm.sessionmaker:
+    dotenv.load_dotenv()
     engine = sql_asyncio.create_async_engine(db_config.test_db_url, echo=True)
     async with engine.begin() as conn:
         db.Base.metadata.bind = conn
