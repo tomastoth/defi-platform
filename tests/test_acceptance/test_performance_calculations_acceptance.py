@@ -1,10 +1,10 @@
 from datetime import datetime
 
-import defi_common.dbconfig
 import pytest
 import sqlalchemy
 from defi_common.database import models
 
+import src  # noqa
 from src import data, enums, performance, runner, time_utils
 from src.database import services
 from tests.test_unit import utils
@@ -134,10 +134,10 @@ async def test_running_performance_for_all_addresses() -> None:
         mock_asset_provider = MockAssetProvider()
         # run getting of update
         await runner.async_update_all_addresses(
-            session, provide_assets=mock_asset_provider.get_assets, sleep_time=0  # type: ignore
+            session, provide_assets=mock_asset_provider.get_assets, sleep_time=0
         )
         await runner.async_update_all_addresses(
-            session, provide_assets=mock_asset_provider.get_assets, sleep_time=0  # type: ignore
+            session, provide_assets=mock_asset_provider.get_assets, sleep_time=0
         )
         # run comparison of last update to second last update
         # runner should fetch last and second last update for each address
@@ -239,8 +239,8 @@ async def test_address_ranking(
         )
         session.add_all([addr_1_perf_1, addr_1_perf_2, addr_2_perf_1, addr_2_perf_2])
         await session.commit()
-        await runner.async_run_ranking(
-            ranking_type=enums.AddressRankingType.HOUR,
+        await runner.async_run_address_ranking(
+            time_type=enums.RunTimeType.HOUR,
             session=session,
             current_time=time_now,
         )
@@ -248,7 +248,7 @@ async def test_address_ranking(
         ranked_addresses: list[
             data.AddressPerformanceRank
         ] = await services.async_find_address_rankings(
-            ranking_type=enums.AddressRankingType.HOUR,
+            ranking_type=enums.RunTimeType.HOUR,
             time=wanted_query_time,
             session=session,
         )
@@ -258,7 +258,7 @@ async def test_address_ranking(
         assert first_address_avg_perf.avg_performance == 1.0
         assert first_address_avg_perf.rank == 1
         assert first_address_avg_perf.time == wanted_query_time
-        assert first_address_avg_perf.ranking_type == enums.AddressRankingType.HOUR
+        assert first_address_avg_perf.ranking_type == enums.RunTimeType.HOUR
         assert second_addres_avg_perf.address == data_address_2
         assert second_addres_avg_perf.avg_performance == 0.5
         assert second_addres_avg_perf.rank == 2

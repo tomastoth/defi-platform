@@ -15,7 +15,6 @@ async def get_assets(address: data.Address, run_time: int) -> data.AddressUpdate
     ).aggregated_assets[0]
     return data.AddressUpdate(
         value_usd=100000,
-        blockchain_wallet_assets=[],
         aggregated_assets=[aggregated_asset],
     )
 

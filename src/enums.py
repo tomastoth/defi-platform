@@ -15,6 +15,6 @@ class BlockchainType(str, enum.Enum):
     EVM = "EVM"
 
 
-class AddressRankingType(str, enum.Enum):
+class RunTimeType(str, enum.Enum):
     HOUR = "HOUR"
     DAY = "DAY"

@@ -4,7 +4,15 @@ from datetime import datetime
 
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-from src import data, debank, enums, performance, spec, time_utils
+from src import (
+    aggregated_assets,
+    coin_changes,
+    data,
+    enums,
+    performance,
+    spec,
+    time_utils,
+)
 from src.database import services
 
 log = logging.getLogger(__name__)
@@ -30,8 +38,8 @@ async def async_calculate_address_performance(
 
 async def async_save_aggregated_assets_for_address(
     address: data.Address,
-    new_aggregated_updates: list[data.AggregatedAsset],
     session: sql_asyncio.AsyncSession,
+    new_aggregated_updates: list[data.AggregatedAsset],
 ) -> None:
     for aggregated_asset in new_aggregated_updates:
         await services.async_save_aggregated_update(aggregated_asset, address, session)
@@ -57,7 +65,7 @@ async def async_run_single_address(
         return
     new_aggregated_updates = address_update.aggregated_assets
     await async_save_aggregated_assets_for_address(
-        address, new_aggregated_updates, session
+        address=address, new_aggregated_updates=new_aggregated_updates, session=session
     )
     if not last_aggregated_updates:
         log.warning(
@@ -78,7 +86,7 @@ async def async_run_single_address(
 
 async def async_update_all_addresses(
     session: sql_asyncio.AsyncSession,
-    provide_assets: spec.AssetProvider = debank.async_provide_aggregated_assets,
+    provide_assets: spec.AssetProvider = aggregated_assets.async_provide_aggregated_assets,
     sleep_time: int = 15,
 ) -> None:
     run_time = time_utils.get_time_now()
@@ -101,20 +109,27 @@ async def async_update_all_addresses(
 
         await asyncio.sleep(sleep_time)
     [
-        await services.async_save_performance_result(single_performance, session)  # type: ignore
+        await services.async_save_performance_result(single_performance, session)
+        # type: ignore
         for single_performance in performances
     ]
 
 
-async def async_run_ranking(
-    ranking_type: enums.AddressRankingType,
+async def async_run_address_ranking(
+    time_type: enums.RunTimeType,
     session: sql_asyncio.AsyncSession,
     current_time: datetime = datetime.now(),
 ) -> None:
     await performance.async_save_address_ranking(
-        ranking_type=ranking_type,
+        ranking_type=time_type,
         session=session,
         run_time=current_time,
     )
 
 
+async def async_run_coin_change_ranking(
+    time_type: enums.RunTimeType,
+    session: sql_asyncio.AsyncSession,
+    current_time: datetime = datetime.now(),
+) -> None:
+    await coin_changes.async_run_coin_ranking(time_type, current_time, session)

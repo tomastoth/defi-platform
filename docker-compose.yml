@@ -2,18 +2,17 @@ services:
   app:
     container_name: crypto_platform
     build: .
-    working_dir: /
     environment:
       DEBUG: 1
     volumes:
       - .:/code
     ports:
-      - "8080:8080"
+      - "8081:8081"
     restart: on-failure
+    network_mode: host
     depends_on:
       - db
-    links:
-      - db
+
   db:
     image: postgres:14.1-alpine
     restart: always

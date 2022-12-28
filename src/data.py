@@ -1,5 +1,8 @@
 from datetime import datetime
 
+import dotenv
+
+dotenv.load_dotenv()
 import pydantic
 
 from src import enums
@@ -41,7 +44,6 @@ class BlockchainAsset(UsdValue):
 
 
 class AddressUpdate(UsdValue):
-    blockchain_wallet_assets: list[BlockchainAsset]
     aggregated_assets: list[AggregatedAsset]
 
 
@@ -54,7 +56,15 @@ class PerformanceResult(pydantic.BaseModel):
 
 class AddressPerformanceRank(pydantic.BaseModel):
     address: Address
-    ranking_type: enums.AddressRankingType
+    ranking_type: enums.RunTimeType
     time: datetime
     avg_performance: float
     rank: int
+
+
+class AssetOwnedChange(pydantic.BaseModel):
+    time: datetime
+    rank: int
+    symbol: str
+    pct_change: float
+    run_type: enums.RunTimeType
