@@ -127,77 +127,6 @@ class NansenPortfolioAssetProvider(AggregatedAssetProvider):
         )
 
 
-class CovalentAssetProvider(AggregatedAssetProvider):
-    COVALENT_URL = "https://api.covalenthq.com"
-    BLOCKCHAINS = {
-        enums.Blockchain.ETH: 1,
-        enums.Blockchain.MATIC: 137,
-        enums.Blockchain.BSC: 56,
-        enums.Blockchain.AVAX: 43114,
-    }
-
-    def _extract_single_blockchain_asset(
-        self, item: dict[str, typing.Any], blockchain: enums.Blockchain
-    ):
-        contract_decimals = int(item["contract_decimals"])
-        balance = int(item["balance"])
-        balance_divided = balance / (10**contract_decimals)
-        symbol = item["contract_ticker_symbol"]
-        contract_address = item["contract_address"]
-        raise NotImplementedError("Price provision is not implemented yet!")
-        # return data.BlockchainAsset(
-        #     symbol=symbol,
-        #     amount=balance_divided,
-        #     blockchain=blockchain,
-        #     price=price_usd
-        # )
-
-    async def _async_get_blockchain(self, blockchain: enums.Blockchain) -> str:
-        if blockchain not in self.BLOCKCHAINS:
-            raise exceptions.CovalentUnknownBlockchainError()
-        return str(self.BLOCKCHAINS[blockchain])
-
-    async def _async_request_single_blockchain_data(
-        self, address, blockchain: enums.Blockchain
-    ) -> list[data.BlockchainAsset]:
-        blockchain_str = await self._async_get_blockchain(blockchain)
-        url = f"{CovalentAssetProvider.COVALENT_URL}/v1/{blockchain_str}/address/{address.address}/balances_v2/"
-        params = {
-            "quote-currency": "USD",
-            "format": "JSON",
-            "nft": "false",
-            "no-nft-fetch": "true",
-            "key": config.covalent_key,
-        }
-        headers = {"Content-Type": "application/json"}
-        resp_json = await http_utils.async_request(url, headers, params=params)
-        json_data = resp_json["data"]
-        items = json_data["items"]
-        blockchain_assets: list[data.BlockchainAsset] = []
-        for item in items:
-            blockchain_asset = self._extract_single_blockchain_asset(item, blockchain)
-            if blockchain_asset:
-                blockchain_assets.append(blockchain_asset)
-        return blockchain_assets
-
-    async def async_get_assets_for_address(
-        self, address: data.Address, run_time: int
-    ) -> data.AddressUpdate | None:
-        for blockchain in self.BLOCKCHAINS.keys():
-            blockchain_assets = await self._async_request_single_blockchain_data(
-                address, blockchain=blockchain
-            )
-            print(blockchain_assets)
-            """
-            TODO
-            1. gather all coins from all blockchains
-            2. for each coin we need to get their price
-            3. then we need to aggregate sum value of all coins
-            4. then aggregate coins that are the same (USDC on BSC, USDC on ETH)
-            5. then we can calculate % owned of each coin
-            """
-
-
 class Debank(AggregatedAssetProvider):
     DEBANK_URL = "http://api.debank.com/"
     HEADERS = {
@@ -321,16 +250,3 @@ async def async_provide_aggregated_assets(
     return await nansen_portfolio_price_provider.async_get_assets_for_address(
         address, run_timestamp
     )
-
-
-async def main():
-    cov = NansenPortfolioAssetProvider()
-    result = await cov.async_get_assets_for_address(
-        address=data.Address(address="0xeee7fa9f2148e9499d6d857dc09e29864203b138"),
-        run_time=123456,
-    )
-    print(result)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
