@@ -4,9 +4,9 @@ version = "0.1.0"
 description = ""
 authors = ["Tomas Toth <tomas.toth004@gmail.com>"]
 license = "MIT"
-packages = [
-    { "include" = "src" },
-]
+#packages = [
+#    { "include" = "src" },
+#]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -70,3 +70,5 @@ ignore = [
     "B008", # do not perform function calls in argument defaults
 ]
 
+[tool.isort]
+skip = ["main.py"]
