@@ -1,14 +1,21 @@
+import asyncio
 from datetime import datetime
 
+import src
+
+from defi_common.database import db
 from sqlalchemy.ext import asyncio as sql_asyncio
 
 from src import data, enums, math_utils
 from src.database import services
+from src.enums import RunTimeType
 from src.time_utils import get_saving_time_for_ranking, get_times_for_comparison
+import logging
 
+log = logging.getLogger(__name__)
 
 def _add_assets_to_dict(
-    assets: list[data.AggregatedAsset],
+        assets: list[data.AggregatedAsset],
 ) -> dict[str, data.AggregatedAsset]:
     asset_dict = {}
     for asset in assets:
@@ -18,11 +25,11 @@ def _add_assets_to_dict(
 
 
 def calculate_performance(
-    old_address_updates: list[data.AggregatedAsset],
-    new_address_updates: list[data.AggregatedAsset],
-    start_time: datetime,
-    address: data.Address,
-    end_time: datetime = datetime.now(),
+        old_address_updates: list[data.AggregatedAsset],
+        new_address_updates: list[data.AggregatedAsset],
+        start_time: datetime,
+        address: data.Address,
+        end_time: datetime = datetime.now(),
 ) -> data.PerformanceResult:
     old_assets_dict = _add_assets_to_dict(old_address_updates)
     new_assets_dict = _add_assets_to_dict(new_address_updates)
@@ -46,9 +53,9 @@ def calculate_performance(
 
 
 async def _async_create_address_ranks(
-    query_time: datetime,
-    ranking_type: enums.RunTimeType,
-    sorted_rank_dict: dict[data.Address, float],
+        query_time: datetime,
+        ranking_type: enums.RunTimeType,
+        sorted_rank_dict: dict[data.Address, float],
 ) -> list[data.AddressPerformanceRank]:
     address_ranks: list[data.AddressPerformanceRank] = []
     for index, (address, avg_performance) in enumerate(sorted_rank_dict.items()):
@@ -66,7 +73,7 @@ async def _async_create_address_ranks(
 
 
 async def _async_calculate_avg_performances(
-    start_time: datetime, end_time: datetime, session: sql_asyncio.AsyncSession
+        start_time: datetime, end_time: datetime, session: sql_asyncio.AsyncSession
 ) -> dict[data.Address, float]:
     performance_dict: dict[data.Address, float] = {}
     addresses: list[data.Address] = await services.async_find_all_converted_addresses(
@@ -91,19 +98,31 @@ async def _async_calculate_avg_performances(
 
 
 async def async_save_address_ranking(
-    ranking_type: enums.RunTimeType,
-    session: sql_asyncio.AsyncSession,
-    run_time: datetime = datetime.now(),
+        ranking_type: enums.RunTimeType,
+        session: sql_asyncio.AsyncSession,
+        run_time: datetime = datetime.now(),
 ) -> None:
     start_time, end_time = get_times_for_comparison(ranking_type, run_time)
     performance_dict = await _async_calculate_avg_performances(
         start_time, end_time, session
     )
-    sorted_rank_dict: dict[data.Address, float] = dict(
-        sorted(performance_dict.items(), key=lambda item: item[1], reverse=True)
-    )
+    log.info(f"address running perf dict len: {len(performance_dict)}")
+    sorted_rank_dict = dict(
+        sorted(performance_dict.items(), key=lambda item: item[1], reverse=True))
+    log.info(f"address running sorted perf dict len: {len(sorted_rank_dict)}")
     query_time = get_saving_time_for_ranking(ranking_type, run_time)
     address_ranks = await _async_create_address_ranks(
         query_time, ranking_type, sorted_rank_dict
     )
+    log.info(f"address running address ranks len: {len(address_ranks)}")
     await services.async_save_address_ranks(address_ranks, session)
+    log.info("Saved address ranks")
+
+
+async def main():
+    async with db.async_session() as session:
+        await async_save_address_ranking(RunTimeType.HOUR, session)
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

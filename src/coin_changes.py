@@ -131,6 +131,8 @@ async def async_run_coin_ranking(
     coin_changes = await async_calculate_averaged_coin_changes(
         start_time=start_dt, end_time=end_dt, run_time_type=time_type, session=session
     )
+    log.info(f"coin ranking, coin changes len: {len(coin_changes)}")
     await services.async_save_coin_changes(
         coin_changes, save_time=current_time, run_time_type=time_type, session=session
     )
+    log.info(f"Saved coin ranking")
