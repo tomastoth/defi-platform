@@ -6,7 +6,6 @@ authors = ["Tomas Toth <tomas.toth004@gmail.com>"]
 license = "MIT"
 packages = [
     { "include" = "src" },
-    { "include" = "defi-common" }
 ]
 
 [tool.poetry.dependencies]
