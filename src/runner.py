@@ -1,7 +1,10 @@
 import asyncio
 import logging
 from datetime import datetime
+from typing import AsyncGenerator
+import src
 
+from defi_common.database import db
 from sqlalchemy.ext import asyncio as sql_asyncio
 
 from src import (
@@ -133,3 +136,15 @@ async def async_run_coin_change_ranking(
     current_time: datetime = datetime.now(),
 ) -> None:
     await coin_changes.async_run_coin_ranking(time_type, current_time, session)
+
+
+async def main():
+    async with db.async_session() as session:
+        try:
+            await async_update_all_addresses(session)
+        except Exception as e:
+            print(e)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

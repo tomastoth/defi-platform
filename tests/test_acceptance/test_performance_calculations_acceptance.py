@@ -4,7 +4,6 @@ import pytest
 import sqlalchemy
 from defi_common.database import models
 
-import src  # noqa
 from src import data, enums, performance, runner, time_utils
 from src.database import services
 from tests.test_unit import utils
