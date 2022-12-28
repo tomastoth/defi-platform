@@ -1,12 +1,11 @@
 import asyncio
 import logging
-
+import src  # noqa
 from apscheduler.schedulers import asyncio as asyncio_scheduler
 from apscheduler.triggers import cron
 from defi_common.database import db
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-import src  # noqa
 from src import addresses, enums, runner
 
 
@@ -14,22 +13,22 @@ def run_executor(event_loop: asyncio.AbstractEventLoop) -> None:
     scheduler = asyncio_scheduler.AsyncIOScheduler(event_loop=event_loop)
     scheduler.add_job(
         runner.async_update_all_addresses,
-        kwargs={"session_maker": db.sessionmaker},
+        kwargs={"session_maker": db.async_session},
         trigger=cron.CronTrigger.from_crontab("*/2 * * * *"),
     )
     scheduler.add_job(
         runner.async_run_address_ranking,
-        kwargs={"session_maker": db.sessionmaker, "time_type": enums.RunTimeType.HOUR},
+        kwargs={"session_maker": db.async_session, "time_type": enums.RunTimeType.HOUR},
         trigger=cron.CronTrigger.from_crontab("1 * * * *"),
     )
     scheduler.add_job(
         runner.async_run_coin_change_ranking,
-        kwargs={"session_maker": db.sessionmaker, "time_type": enums.RunTimeType.HOUR},
+        kwargs={"session_maker": db.async_session, "time_type": enums.RunTimeType.HOUR},
         trigger=cron.CronTrigger.from_crontab("1 * * * *"),
     )
     scheduler.add_job(
         runner.async_run_address_ranking,
-        kwargs={"session_maker": db.sessionmaker, "time_type": enums.RunTimeType.DAY},
+        kwargs={"session_maker": db.async_session, "time_type": enums.RunTimeType.DAY},
         trigger=cron.CronTrigger.from_crontab("1 0 * * *"),
     )
     scheduler.start()
