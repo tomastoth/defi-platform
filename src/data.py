@@ -44,7 +44,6 @@ class BlockchainAsset(UsdValue):
 
 
 class AddressUpdate(UsdValue):
-    blockchain_wallet_assets: list[BlockchainAsset]
     aggregated_assets: list[AggregatedAsset]
 
 

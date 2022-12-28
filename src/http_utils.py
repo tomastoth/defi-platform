@@ -54,12 +54,17 @@ class ListProxyProvider(ProxyProvider):
 
 
 async def async_request(
-    url: str, headers: dict[str, str] | None = None, proxy: str | None = None
+    url: str,
+    headers: dict[str, str] | None = None,
+    proxy: str | None = None,
+    params: dict[str, typing.Any] | None = None,
 ) -> typing.Any:
     if not headers:
         headers = {}
+    if not params:
+        params = {}
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url, proxy=proxy) as response:
+        async with session.get(url, proxy=proxy, params=params) as response:
             if response.status != 200:
                 log.warning(f"Got response status {response.status}")
                 raise exceptions.InvalidHttpResponseError()

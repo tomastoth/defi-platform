@@ -20,3 +20,19 @@ class InvalidHttpResponseError(Exception):
 
 class UnknownEnumError(Exception):
     pass
+
+
+class DebankDataInvalidError(Exception):
+    pass
+
+
+class DebankUnknownBlockchainError(Exception):
+    pass
+
+
+class CovalentUnknownBlockchainError(Exception):
+    pass
+
+
+class NansenPortfolioUnknownBlockchainError(Exception):
+    pass

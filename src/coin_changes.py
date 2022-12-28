@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy.ext import asyncio as sql_asyncio
+import sqlalchemy.ext.asyncio as sql_asyncio
 
 from src import data, enums, math_utils
 from src.data import AssetOwnedChange
@@ -28,7 +28,9 @@ def _add_sum_value_to_dict(
     dict_to_edit[symbol] += value
 
 
-async def _async_fetch_aggregated_updates(address, end_time, session, start_time):
+async def _async_fetch_aggregated_updates(
+    address, end_time, session, start_time
+) -> tuple[list[data.AggregatedAsset], list[data.AggregatedAsset]]:
     first_updates = await services.async_find_aggregated_updates(
         address, start_time, session
     )
@@ -58,7 +60,9 @@ def _create_asset_owned_changes(
     return result
 
 
-def _calculate_sorted_averaged_coin_changes(addresses, coin_change_sums):
+def _calculate_sorted_averaged_coin_changes(
+    addresses: list[data.Address], coin_change_sums: dict[str, float]
+) -> dict[str, float]:
     coin_changes_avged: dict[str, float] = {}
     for symbol, coin_change_sum in coin_change_sums.items():
         coin_changes_avged[symbol] = coin_change_sum / len(addresses)
@@ -119,7 +123,7 @@ async def async_run_coin_ranking(
     time_type: enums.RunTimeType,
     current_time: datetime,
     session: sql_asyncio.AsyncSession,
-):
+) -> None:
     start_dt, end_dt = get_times_for_comparison(time_type, current_time)
     coin_changes = await async_calculate_averaged_coin_changes(
         start_time=start_dt, end_time=end_dt, run_time_type=time_type, session=session

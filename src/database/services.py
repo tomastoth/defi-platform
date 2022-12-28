@@ -44,6 +44,7 @@ async def async_save_aggregated_update(
         existing_address = await async_find_address(address, session)
     if not existing_address:
         raise AddressNotCreatedError()
+    time_now = time_utils.get_datetime_from_ts(update.timestamp)
     update_model = models.AggregatedBalanceUpdate(
         symbol=update.symbol,
         amount=update.amount,
@@ -51,7 +52,9 @@ async def async_save_aggregated_update(
         value_usd=update.value_usd,
         value_pct=update.value_pct,
         timestamp=update.timestamp,
-        time=time_utils.get_datetime_from_ts(update.timestamp),
+        time_created=time_now,
+        time_updated=time_now,
+        time=time_now,
         address=existing_address,
         address_id=existing_address.id,
     )
