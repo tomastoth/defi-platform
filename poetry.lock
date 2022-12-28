@@ -204,22 +204,17 @@ reference = "testpypi"
 
 [[package]]
 name = "defi-common"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 category = "main"
 optional = false
-python-versions = "^3.10"
-develop = true
+python-versions = ">=3.10,<4.0"
 
 [package.dependencies]
-pre-commit = "^2.20.0"
-pytest = "^7.2.0"
-python-dotenv = "^0.21.0"
-sqlalchemy = "^1.4.44"
-
-[package.source]
-type = "directory"
-url = "defi-common"
+pre-commit = ">=2.20.0,<3.0.0"
+pytest = ">=7.2.0,<8.0.0"
+python-dotenv = ">=0.21.0,<0.22.0"
+sqlalchemy = ">=1.4.44,<2.0.0"
 
 [[package]]
 name = "distlib"
@@ -835,7 +830,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "ee3457fd41d47afc96b4ac23b40a88b0b3945593ebaeb96425d6eafae2ca2672"
+content-hash = "6eee436c90b2cfd50828ad9c356def1e34462d55c82f8454a8433795b583accd"
 
 [metadata.files]
 aiohttp = [
@@ -1023,7 +1018,10 @@ colorama = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-defi-common = []
+defi-common = [
+    {file = "defi_common-0.1.2-py3-none-any.whl", hash = "sha256:f91ffcbf0bf761b0926d03e46ae5ffd19160f08215eb7b1025b43c4a97cff3c2"},
+    {file = "defi_common-0.1.2.tar.gz", hash = "sha256:63109578c3fd6fd2e0a7a65267943c45e52c3bf548f0c3a0ecdfcee513c731d6"},
+]
 distlib = [
     {file = "distlib-0.3.6-py2.py3-none-any.whl", hash = "sha256:f35c4b692542ca110de7ef0bea44d73981caeb34ca0b9b6b2e6d7790dda8f80e"},
     {file = "distlib-0.3.6.tar.gz", hash = "sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46"},
