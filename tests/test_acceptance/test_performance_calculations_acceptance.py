@@ -124,8 +124,8 @@ class MockAssetProvider:
 
 @pytest.mark.asyncio
 async def test_running_performance_for_all_addresses() -> None:
-    async_session = await utils.test_database_session()
-    async with async_session() as session:
+    session_maker = await utils.test_database_session()
+    async with session_maker() as session:
         address_1 = models.Address(address="0x123", blockchain_type="EVM")
         address_2 = models.Address(address="0x124", blockchain_type="EVM")
         session.add_all([address_1, address_2])
@@ -133,10 +133,10 @@ async def test_running_performance_for_all_addresses() -> None:
         mock_asset_provider = MockAssetProvider()
         # run getting of update
         await runner.async_update_all_addresses(
-            session, provide_assets=mock_asset_provider.get_assets, sleep_time=0
+            session_maker, provide_assets=mock_asset_provider.get_assets, sleep_time=0
         )
         await runner.async_update_all_addresses(
-            session, provide_assets=mock_asset_provider.get_assets, sleep_time=0
+            session_maker, provide_assets=mock_asset_provider.get_assets, sleep_time=0
         )
         # run comparison of last update to second last update
         # runner should fetch last and second last update for each address
@@ -206,8 +206,8 @@ async def test_address_ranking(
     - we sort addresses by these metrics
     - save the ranked_addresses ran
     """
-    async_session = await utils.test_database_session()
-    async with async_session() as session:
+    session_maker = await utils.test_database_session()
+    async with session_maker() as session:
         performance_start_date_1 = utils.create_datetime(hour=1, minute=15)
         performance_end_date_1 = utils.create_datetime(hour=1, minute=30)
         performance_start_date_2 = utils.create_datetime(hour=1, minute=30)
@@ -240,7 +240,7 @@ async def test_address_ranking(
         await session.commit()
         await runner.async_run_address_ranking(
             time_type=enums.RunTimeType.HOUR,
-            session=session,
+            session_maker=session_maker,
             current_time=time_now,
         )
         wanted_query_time = datetime(2022, 1, 1, 1, 0, 0)

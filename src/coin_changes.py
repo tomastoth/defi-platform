@@ -29,7 +29,10 @@ def _add_sum_value_to_dict(
 
 
 async def _async_fetch_aggregated_updates(
-    address, end_time, session, start_time
+    address: data.Address,
+    end_time: datetime,
+    session: sql_asyncio.AsyncSession,
+    start_time: datetime,
 ) -> tuple[list[data.AggregatedAsset], list[data.AggregatedAsset]]:
     first_updates = await services.async_find_aggregated_updates(
         address, start_time, session
