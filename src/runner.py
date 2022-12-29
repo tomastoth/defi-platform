@@ -2,11 +2,10 @@ import asyncio
 import logging
 from datetime import datetime
 
+from sqlalchemy.ext import asyncio as sql_asyncio
 from sqlalchemy.orm import sessionmaker
 
-
-from sqlalchemy.ext import asyncio as sql_asyncio
-
+import src  # noqa
 from src import (
     aggregated_assets,
     coin_changes,
