@@ -41,6 +41,6 @@ async def test_running_saving_aggregated_asset(
                     address=address,
                     run_time_dt=datetime.now(),
                     performances=[],
-                    run_time=100,
+                    current_time=100,
                 )
                 assert save.call_count == 1

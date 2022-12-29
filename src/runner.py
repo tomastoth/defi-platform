@@ -26,13 +26,13 @@ async def async_calculate_address_performance(
     last_aggregated_updates: list[data.AggregatedAsset],
     new_aggregated_updates: list[data.AggregatedAsset],
     performances: list[data.PerformanceResult],
-    run_time_dt: datetime,
+    current_datetime: datetime,
 ) -> None:
     performance_result = performance.calculate_performance(
         old_address_updates=last_aggregated_updates,
         new_address_updates=new_aggregated_updates,
         start_time=time_utils.get_datetime_from_ts(last_aggregated_time),
-        end_time=run_time_dt,
+        end_time=current_datetime,
         address=address,
     )
     performances.append(performance_result)
@@ -53,13 +53,13 @@ async def async_run_single_address(
     run_time_dt: datetime,
     session: sql_asyncio.AsyncSession,
     provide_assets: spec.AssetProvider,
-    run_time: int,
+    current_time: int,
 ) -> None:
     log.info(f"Updating address: {address.address}")
     last_aggregated_updates: list[
         data.AggregatedAsset
     ] = await services.async_find_address_last_aggregated_updates(address, session)
-    address_update = await provide_assets(address, run_time)
+    address_update = await provide_assets(address, current_time)
     if not address_update:
         log.warning(
             f"Could not fetch last agg updates for address: {address}, skipping update"
@@ -107,7 +107,7 @@ async def async_update_all_addresses(
                 provide_assets=provide_assets,
                 run_time_dt=run_time_dt,
                 session=session,
-                run_time=run_time,
+                current_time=run_time,
             )
 
             await asyncio.sleep(sleep_time)
@@ -121,8 +121,10 @@ async def async_update_all_addresses(
 async def async_run_address_ranking(
     time_type: enums.RunTimeType,
     session_maker: sessionmaker,
-    current_time: datetime = datetime.now(),
+    current_time: datetime | None = None,
 ) -> None:
+    if not current_time:
+        current_time = datetime.now()
     async with session_maker() as session:
         await performance.async_save_address_ranking(
             ranking_type=time_type,
@@ -134,7 +136,9 @@ async def async_run_address_ranking(
 async def async_run_coin_change_ranking(
     time_type: enums.RunTimeType,
     session_maker: sessionmaker,
-    current_time: datetime = datetime.now(),
+    current_time: datetime | None = None,
 ) -> None:
+    if not current_time:
+        current_time = datetime.now()
     async with session_maker() as session:
         await coin_changes.async_run_coin_ranking(time_type, current_time, session)
