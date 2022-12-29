@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime
-
+import src  # noqa
 from defi_common.database import db
 
 import sqlalchemy.ext.asyncio as sql_asyncio
@@ -155,6 +155,7 @@ async def main():
         start_dt, end_dt = get_times_for_comparison(
             time_type, datetime(2022, 12, 29, 13, 1, 0)
         )
+        print(f"start {start_dt}, end {end_dt}")
         coin_changes = await async_calculate_averaged_coin_changes(
             start_time=start_dt,
             end_time=end_dt,
