@@ -36,3 +36,6 @@ class CovalentUnknownBlockchainError(Exception):
 
 class NansenPortfolioUnknownBlockchainError(Exception):
     pass
+
+class InvalidParamError(Exception):
+    pass
