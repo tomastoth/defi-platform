@@ -1,7 +1,4 @@
 
-description: |
-  An example of working with the Poetry cache on CircleCI to speed up builds.
-usage:
   version: 2.1
   orbs:
     python: circleci/python@1.0.0
