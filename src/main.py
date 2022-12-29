@@ -14,7 +14,7 @@ def run_executor(event_loop: asyncio.AbstractEventLoop) -> None:
     scheduler.add_job(
         runner.async_update_all_addresses,
         kwargs={"session_maker": db.async_session},
-        trigger=cron.CronTrigger.from_crontab("*/5 * * * *"),
+        trigger=cron.CronTrigger.from_crontab("*/15 * * * *"),
     )
     scheduler.add_job(
         runner.async_run_address_ranking,

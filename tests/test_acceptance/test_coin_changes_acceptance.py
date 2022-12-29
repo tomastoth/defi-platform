@@ -120,9 +120,9 @@ async def test_coin_changes() -> None:
         )
         spex = result[0]
         assert spex.symbol == "SPEX"
-        assert spex.pct_change == pytest.approx(50.2, abs=1e-2)
+        assert spex.pct_change == pytest.approx(25.05, abs=1e-2)
         rot = result[1]
         assert rot.symbol == "ROT"
-        assert rot.pct_change == pytest.approx(50.0)
+        assert rot.pct_change == pytest.approx(25.0)
         negative_symbol = result[2]
-        assert negative_symbol.pct_change == pytest.approx(-50.0)
+        assert negative_symbol.pct_change == pytest.approx(-25.0)

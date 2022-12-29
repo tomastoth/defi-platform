@@ -1,9 +1,12 @@
+import asyncio
 import logging
 from datetime import datetime
 
+from defi_common.database import db
+
 import sqlalchemy.ext.asyncio as sql_asyncio
 
-from src import data, enums, math_utils
+from src import data, enums, time_utils
 from src.data import AssetOwnedChange
 from src.database import services
 from src.time_utils import get_times_for_comparison
@@ -111,12 +114,18 @@ async def async_calculate_averaged_coin_changes(
         first_updates, second_updates = await _async_fetch_aggregated_updates(
             address, end_time, session, start_time
         )
+        log.info(
+            f"Coin changes, time now: {time_utils.get_time_now()}, start_time: {start_time},"
+            f"end time: {end_time}"
+        )
         if not first_updates or not second_updates:
             log.warning(
                 f"address {address} has no first or second updates, skipping calculating coin change"
             )
             continue
-        await async_extract_coin_changes(coin_change_sums, first_updates, second_updates)
+        await async_extract_coin_changes(
+            coin_change_sums, first_updates, second_updates
+        )
 
     sorted_coin_changes = _calculate_sorted_averaged_coin_changes(
         addresses, coin_change_sums
@@ -138,3 +147,22 @@ async def async_run_coin_ranking(
         coin_changes, save_time=current_time, run_time_type=time_type, session=session
     )
     log.info(f"Saved coin ranking")
+
+
+async def main():
+    time_type = enums.RunTimeType.HOUR
+    async with db.async_session() as session:
+        start_dt, end_dt = get_times_for_comparison(
+            time_type, datetime(2022, 12, 29, 13, 1, 0)
+        )
+        coin_changes = await async_calculate_averaged_coin_changes(
+            start_time=start_dt,
+            end_time=end_dt,
+            run_time_type=time_type,
+            session=session,
+        )
+        [print(coin_change) for coin_change in coin_changes]
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
