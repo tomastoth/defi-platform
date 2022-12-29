@@ -75,7 +75,7 @@ def _calculate_sorted_averaged_coin_changes(
     return sorted_coin_changes
 
 
-async def _extract_coin_changes(
+async def async_extract_coin_changes(
     coin_change_sums: dict[str, float],
     first_updates: list[data.AggregatedAsset],
     second_updates: list[data.AggregatedAsset],
@@ -86,13 +86,15 @@ async def _extract_coin_changes(
         first_pct = update.value_pct
         if symbol in second_updates_dict.keys():
             second_pct = second_updates_dict[symbol].value_pct
-            pct_diff = math_utils.calc_percentage_diff(second_pct, first_pct)
+            pct_diff = second_pct - first_pct
             _add_sum_value_to_dict(symbol, pct_diff, coin_change_sums)
         else:
-            _add_sum_value_to_dict(symbol, -100.0, coin_change_sums)
+            negative_first_pct = -1.0 * first_pct
+            _add_sum_value_to_dict(symbol, negative_first_pct, coin_change_sums)
     for symbol, _update in second_updates_dict.items():
         if symbol not in first_updates_dict.keys():
-            _add_sum_value_to_dict(symbol, 100.0, coin_change_sums)
+            second_pct = _update.value_pct
+            _add_sum_value_to_dict(symbol, second_pct, coin_change_sums)
 
 
 async def async_calculate_averaged_coin_changes(
@@ -114,7 +116,7 @@ async def async_calculate_averaged_coin_changes(
                 f"address {address} has no first or second updates, skipping calculating coin change"
             )
             continue
-        await _extract_coin_changes(coin_change_sums, first_updates, second_updates)
+        await async_extract_coin_changes(coin_change_sums, first_updates, second_updates)
 
     sorted_coin_changes = _calculate_sorted_averaged_coin_changes(
         addresses, coin_change_sums
