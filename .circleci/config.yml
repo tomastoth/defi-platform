@@ -12,6 +12,7 @@
         - image: cimg/python:3.11.1
       steps:
         - checkout
+        - run: echo 'export PYTHONPATH="${PYTHONPATH}:./src/"' >> $BASH_ENV
         - python/install-packages:
             pkg-manager: poetry
         - run:
