@@ -2,6 +2,7 @@ import enum
 
 
 class Blockchain(str, enum.Enum):
+
     ETH = "Ethereum"
     AVAX = "Avax"
     DFK = "Dfk"
@@ -9,6 +10,8 @@ class Blockchain(str, enum.Enum):
     FTM = "Fantom"
     MATIC = "Polygon"
     ARB = "Arbitrum"
+    OPTIMISM = "Optimism"
+    APTOS = "Aptos"
 
 
 class BlockchainType(str, enum.Enum):
