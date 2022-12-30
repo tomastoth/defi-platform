@@ -57,21 +57,21 @@ class AggregatedAssetProvider(ABC):
 class NansenPortfolioAssetProvider(AggregatedAssetProvider):
     BASE_URL = "https://api-dev.nansen.ai/portfolio/wallet"
     headers = {
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:108.0) Gecko/20100101 Firefox/108.0",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.5",
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:108.0) Gecko/20100101 Firefox/108.0',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.5',
         # 'Accept-Encoding': 'gzip, deflate, br',
-        "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg3NTNiYmFiM2U4YzBmZjdjN2ZiNzg0ZWM5MmY5ODk3YjVjZDkwN2QiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZDUtbmFuc2VuLXByb2QiLCJhdWQiOiJkNS1uYW5zZW4tcHJvZCIsImF1dGhfdGltZSI6MTY3MjA4OTE0NCwidXNlcl9pZCI6InZjdWZnMWVjbTdYWllObThldjdsbm1wWE1lMjIiLCJzdWIiOiJ2Y3VmZzFlY203WFpZTm04ZXY3bG5tcFhNZTIyIiwiaWF0IjoxNjcyMTU4MjM0LCJleHAiOjE2NzIxNjE4MzQsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnt9LCJzaWduX2luX3Byb3ZpZGVyIjoiY3VzdG9tIn19.EFe_IswUjFPUsZClJj3RVJvMipN9w2TKDCIK8gycYhsQzTKomJX4indkW80oFT8mzeSkfg79LkbNC81tcdZw9rqiHjhxh-XZr92DV2CCoIRTL1qZxw_F9G5kz9pNJZ7m7Amu-gHBVG-8WtQ1anoHEW3DdzWfcKerw6ittPUoJFRlOv7XUhiS9f_uJypPZmwh22TWrYhsf7luDXjrQmsKTMj29PIi68Q0FDg4nX5NobNUtdLfB_gm6IvI1HZ_xw7vbIwAFeFtHKRSO8uSkNvfttXaHxbJOHg7XmIjDan5h3bTE1D14CkyPjpQuVfFS_mzLCjlyucgoTDBLgNfcmXlmw",
-        "passcode": "A63uGa8775Ne89wwqADwKYGeyceXAxmHL",
-        "ape-secret": "U2FsdGVkX1/DQtd95L8J6G7XZPcTKNxveiND4N39ghTTvMTMbkhuzbDHdSNOo217CK0yNvthV9aROkwV9SxIBg9bs/PkaFaXz0aMldSMSla99bNYH082JPALt4efhR7Z5oQco3mHD7Pmj9dtHU4+8A==",
-        "Origin": "https://portfolio.nansen.ai",
-        "Connection": "keep-alive",
-        "Referer": "https://portfolio.nansen.ai/",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site",
-        "Pragma": "no-cache",
-        "Cache-Control": "no-cache",
+        'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg3NTNiYmFiM2U4YzBmZjdjN2ZiNzg0ZWM5MmY5ODk3YjVjZDkwN2QiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZDUtbmFuc2VuLXByb2QiLCJhdWQiOiJkNS1uYW5zZW4tcHJvZCIsImF1dGhfdGltZSI6MTY3MjA4OTE0NCwidXNlcl9pZCI6InZjdWZnMWVjbTdYWllObThldjdsbm1wWE1lMjIiLCJzdWIiOiJ2Y3VmZzFlY203WFpZTm04ZXY3bG5tcFhNZTIyIiwiaWF0IjoxNjcyNDE1MjA0LCJleHAiOjE2NzI0MTg4MDQsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnt9LCJzaWduX2luX3Byb3ZpZGVyIjoiY3VzdG9tIn19.vq2vajtp-_GMHHheSIK_GvnDGiksjsYc4uiBWjO8GKvo45X93KK-ZCEAxnNo1nrli2u0v-KUp15YgC4YP--IO2o9BttC8c4Gv8QwpYlDEOQids-C8BRoPHm3Hj1YY0Zg9L3tQeZI2r5ckSJzA3I5TiDqaDjAVAgpqDuctyTT09FSjVmhDY-a36cmgC3xD3sHVq_Gpw8HeZveyjhldtoIdxYuKxFYNz3JYlyKo_6-9anVUG80SD2ldcTj9nmrEHEhyf4_OZBhugucFRl37ucQwoYCSVH86mIT2tgpMakiohmUPRlcQyhIOYOxF352NwTWdo6IJuspkOkEuWTQlPqhsQ',
+        'passcode': 'A63uGa8775Ne89wwqADwKYGeyceXAxmHL',
+        'ape-secret': 'U2FsdGVkX1/XXVHNwgWbUDDl6PllH0iGk1f9AYDmrUfSx1+qcZ5Rsge23uw8MYyjDPF3W4WiCoCoCs1r7QZeTiciVc94vejga2G3O1a2a3KazD2XZmxv3KZpwpJPhc0Sg/UxUGj9xs/DDyN9M1oLPQ==',
+        'Origin': 'https://portfolio.nansen.ai',
+        'Connection': 'keep-alive',
+        'Referer': 'https://portfolio.nansen.ai/',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-site',
+        'Pragma': 'no-cache',
+        'Cache-Control': 'no-cache',
         # Requests doesn't support trailers
         # 'TE': 'trailers',
     }
@@ -82,7 +82,6 @@ class NansenPortfolioAssetProvider(AggregatedAssetProvider):
             enums.Blockchain.AVAX,
             enums.Blockchain.MATIC,
             enums.Blockchain.OPTIMISM,
-            enums.Blockchain.APTOS,
             enums.Blockchain.ARB
         ]
 
@@ -119,8 +118,6 @@ class NansenPortfolioAssetProvider(AggregatedAssetProvider):
                 return "arbitrum"
             case blockchain.AVAX:
                 return "avax"
-            case blockchain.APTOS:
-                return "aptos"
 
         raise exceptions.NansenPortfolioUnknownBlockchainError()
 
