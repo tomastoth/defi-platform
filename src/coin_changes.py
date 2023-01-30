@@ -1,11 +1,11 @@
 import asyncio
 import logging
 from datetime import datetime
-import src  # noqa
-from defi_common.database import db
 
 import sqlalchemy.ext.asyncio as sql_asyncio
+from defi_common.database import db
 
+import src  # noqa
 from src import data, enums, time_utils
 from src.data import AssetOwnedChange
 from src.database import services
@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 def _agg_update_list_to_dict(
-    updates: list[data.AggregatedAsset],
+        updates: list[data.AggregatedAsset],
 ) -> dict[str, data.AggregatedAsset]:
     result = {}
     for update in updates:
@@ -24,7 +24,7 @@ def _agg_update_list_to_dict(
 
 
 def _add_sum_value_to_dict(
-    symbol: str, value: float, dict_to_edit: dict[str, float]
+        symbol: str, value: float, dict_to_edit: dict[str, float]
 ) -> None:
     if symbol not in dict_to_edit:
         dict_to_edit[symbol] = 0
@@ -32,10 +32,10 @@ def _add_sum_value_to_dict(
 
 
 async def _async_fetch_aggregated_updates(
-    address: data.Address,
-    end_time: datetime,
-    session: sql_asyncio.AsyncSession,
-    start_time: datetime,
+        address: data.Address,
+        end_time: datetime,
+        session: sql_asyncio.AsyncSession,
+        start_time: datetime,
 ) -> tuple[list[data.AggregatedAsset], list[data.AggregatedAsset]]:
     first_updates = await services.async_find_aggregated_updates(
         address, start_time, session
@@ -47,9 +47,9 @@ async def _async_fetch_aggregated_updates(
 
 
 def _create_asset_owned_changes(
-    sorted_coin_changes: dict[str, float],
-    end_time: datetime,
-    run_time_type: enums.RunTimeType,
+        sorted_coin_changes: dict[str, float],
+        end_time: datetime,
+        run_time_type: enums.RunTimeType,
 ) -> list[data.AssetOwnedChange]:
     result: list[data.AssetOwnedChange] = []
     for i, (symbol, sorted_coin_change) in enumerate(sorted_coin_changes.items()):
@@ -67,7 +67,7 @@ def _create_asset_owned_changes(
 
 
 def _calculate_sorted_averaged_coin_changes(
-    addresses: list[data.Address], coin_change_sums: dict[str, float]
+        addresses: list[data.Address], coin_change_sums: dict[str, float]
 ) -> dict[str, float]:
     coin_changes_avged: dict[str, float] = {}
     for symbol, coin_change_sum in coin_change_sums.items():
@@ -79,9 +79,9 @@ def _calculate_sorted_averaged_coin_changes(
 
 
 async def async_extract_coin_changes(
-    coin_change_sums: dict[str, float],
-    first_updates: list[data.AggregatedAsset],
-    second_updates: list[data.AggregatedAsset],
+        coin_change_sums: dict[str, float],
+        first_updates: list[data.AggregatedAsset],
+        second_updates: list[data.AggregatedAsset],
 ) -> None:
     first_updates_dict = _agg_update_list_to_dict(first_updates)
     second_updates_dict = _agg_update_list_to_dict(second_updates)
@@ -101,11 +101,11 @@ async def async_extract_coin_changes(
 
 
 async def async_calculate_averaged_coin_changes(
-    start_time: datetime,
-    end_time: datetime,
-    run_time_type: enums.RunTimeType,
-    session: sql_asyncio.AsyncSession,
-    addresses: list[data.Address] | None = None,
+        start_time: datetime,
+        end_time: datetime,
+        run_time_type: enums.RunTimeType,
+        session: sql_asyncio.AsyncSession,
+        addresses: list[data.Address] | None = None,
 ) -> list[data.AssetOwnedChange]:
     if not addresses:
         addresses = await services.async_find_all_converted_addresses(session)
@@ -134,9 +134,9 @@ async def async_calculate_averaged_coin_changes(
 
 
 async def async_run_coin_ranking(
-    time_type: enums.RunTimeType,
-    current_time: datetime,
-    session: sql_asyncio.AsyncSession,
+        time_type: enums.RunTimeType,
+        current_time: datetime,
+        session: sql_asyncio.AsyncSession,
 ) -> None:
     start_dt, end_dt = get_times_for_comparison(time_type, current_time)
     coin_changes = await async_calculate_averaged_coin_changes(

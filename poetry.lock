@@ -733,6 +733,18 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "transpose-data"
+version = "3.1.2"
+description = "Web3 Data Made Simple. Powerful APIs for accessing human-readable blockchain data at scale: from blocks and transactions to NFTs and tokens."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+python-dotenv = "*"
+requests = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.4.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -830,7 +842,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "6eee436c90b2cfd50828ad9c356def1e34462d55c82f8454a8433795b583accd"
+content-hash = "b611aa664cf5af0f3264ce76cadc4d4aab061dce9ab19cf1d0a189683e55127f"
 
 [metadata.files]
 aiohttp = [
@@ -1663,6 +1675,9 @@ stem = [
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
+]
+transpose-data = [
+    {file = "transpose_data-3.1.2.tar.gz", hash = "sha256:f42ddf6d4a64f4eec481c08a6c0d541d68041953d94270ced105764004fcd500"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
