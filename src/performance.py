@@ -1,15 +1,12 @@
-import asyncio
+import logging
 from datetime import datetime
 
-
-from defi_common.database import db
+from defi_common import data, enums
+from defi_common.database import services
+from defi_common.time_utils import get_saving_time_for_ranking, get_times_for_comparison
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-from src import data, enums, math_utils
-from src.database import services
-from src.enums import RunTimeType
-from src.time_utils import get_saving_time_for_ranking, get_times_for_comparison
-import logging
+from src import math_utils
 
 log = logging.getLogger(__name__)
 
@@ -122,12 +119,3 @@ async def async_save_address_ranking(
     log.info(f"address running address ranks len: {len(address_ranks)}")
     await services.async_save_address_ranks(address_ranks, session)
     log.info("Saved address ranks")
-
-
-async def main():
-    async with db.async_session() as session:
-        await async_save_address_ranking(RunTimeType.HOUR, session)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

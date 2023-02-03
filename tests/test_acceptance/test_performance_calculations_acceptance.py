@@ -3,9 +3,9 @@ from datetime import datetime
 import pytest
 import sqlalchemy
 from defi_common.database import models
-
-from src import data, enums, performance, runner, time_utils
-from src.database import services
+from defi_common import data, enums, time_utils
+from src import performance, runner
+from defi_common.database import services
 from tests.test_unit import utils
 from tests.test_unit.fixtures import address, model_address  # noqa
 

@@ -1,7 +1,7 @@
 import pytest
 from defi_common.database import models
 
-from src import data
+from defi_common import data
 
 
 @pytest.fixture

@@ -1,6 +1,7 @@
 import typing
 
-from src import data
+from defi_common import data
+
 
 UsdValue = typing.TypeVar("UsdValue", bound=data.UsdValue)
 AssetProvider = typing.Callable[

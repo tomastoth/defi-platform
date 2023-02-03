@@ -2,9 +2,9 @@ from datetime import datetime
 
 import pytest
 import sqlalchemy.ext.asyncio as sql_async
-
-from src import coin_changes, data, enums
-from src.database import services
+from src import coin_changes
+from defi_common import data, enums
+from defi_common.database import services
 from tests.test_unit import utils
 
 """

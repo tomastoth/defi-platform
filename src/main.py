@@ -6,7 +6,8 @@ from apscheduler.triggers import cron
 from defi_common.database import db
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-from src import addresses, enums, runner
+from src import runner
+from defi_common import enums
 
 
 def run_executor(event_loop: asyncio.AbstractEventLoop) -> None:
@@ -38,7 +39,7 @@ def run_executor(event_loop: asyncio.AbstractEventLoop) -> None:
 async def init_db() -> None:
     # await db.init_models()
     session = db.async_session()
-    await addresses.async_save_addresses_from_all_providers(session)
+    # await addresses.async_save_addresses_from_all_providers(session)
 
 
 def setup_logging() -> None:

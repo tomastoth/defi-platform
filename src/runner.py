@@ -9,13 +9,11 @@ import src  # noqa
 from src import (
     aggregated_assets,
     coin_changes,
-    data,
-    enums,
     performance,
     spec,
-    time_utils,
 )
-from src.database import services
+from defi_common.database import services
+from defi_common import data, enums, time_utils
 
 log = logging.getLogger(__name__)
 
@@ -113,7 +111,6 @@ async def async_update_all_addresses(
             await asyncio.sleep(sleep_time)
         [
             await services.async_save_performance_result(single_performance, session)
-            # type: ignore
             for single_performance in performances
         ]
 

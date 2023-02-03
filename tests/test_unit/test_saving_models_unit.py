@@ -3,10 +3,8 @@ from unittest import mock
 
 import pytest
 from defi_common.database import models
-
-import src.exceptions
-from src import data
-from src.database import services
+from defi_common import exceptions, data
+from defi_common.database import services
 from tests.test_unit import utils
 from tests.test_unit.fixtures import model_address  # noqa
 
@@ -49,7 +47,7 @@ async def test_creating_new_address(address: data.Address) -> None:
     session_mock = mock.AsyncMock()
     add_mock: mock.AsyncMock = mock.MagicMock()
     session_mock.add = add_mock
-    with mock.patch("src.database.services.async_find_address") as find_address:
+    with mock.patch("defi_common.database.services.async_find_address") as find_address:
         find_address.return_value = None
         await services.async_save_address(address=address, session=session_mock)
     address_model: models.Address = add_mock.call_args[0][0]
@@ -60,9 +58,9 @@ async def test_creating_new_address(address: data.Address) -> None:
 @pytest.mark.asyncio
 async def test_throwing_when_address_already_exists(address: models.Address) -> None:
     session_mock = mock.AsyncMock()
-    with mock.patch("src.database.services.async_find_address") as find_address:
+    with mock.patch("defi_common.database.services.async_find_address") as find_address:
         find_address.return_value = mock.MagicMock()
-        with pytest.raises(src.exceptions.AddressAlreadyExistsError):
+        with pytest.raises(exceptions.AddressAlreadyExistsError):
             await services.async_save_address(address, session_mock)
 
 

@@ -1,6 +1,7 @@
 import pytest
 
-from src import aggregated_assets, data
+from src import aggregated_assets
+from defi_common import data
 from tests.test_unit.fixtures import address  # noqa
 
 

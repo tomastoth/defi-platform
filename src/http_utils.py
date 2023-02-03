@@ -10,7 +10,7 @@ import aiohttp
 import requests
 from aiohttp import client_exceptions
 
-from src import exceptions
+from defi_common import exceptions
 from src.config import config
 
 log = logging.getLogger(__name__)

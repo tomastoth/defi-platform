@@ -1,15 +1,13 @@
-import asyncio
 import logging
 from datetime import datetime
 
 import sqlalchemy.ext.asyncio as sql_asyncio
-from defi_common.database import db
+from defi_common.database import services
 
 import src  # noqa
-from src import data, enums, time_utils
-from src.data import AssetOwnedChange
-from src.database import services
-from src.time_utils import get_times_for_comparison
+from defi_common import data, enums, time_utils
+from defi_common.data import AssetOwnedChange
+from defi_common.time_utils import get_times_for_comparison
 
 log = logging.getLogger(__name__)
 
@@ -110,6 +108,9 @@ async def async_calculate_averaged_coin_changes(
     if not addresses:
         addresses = await services.async_find_all_converted_addresses(session)
     coin_change_sums: dict[str, float] = {}
+    if not addresses:
+        log.warning("Received empty addresses in async_calculate_average_coin_changes")
+        return []
     for address in addresses:
         first_updates, second_updates = await _async_fetch_aggregated_updates(
             address, end_time, session, start_time
@@ -147,23 +148,3 @@ async def async_run_coin_ranking(
         coin_changes, save_time=current_time, run_time_type=time_type, session=session
     )
     log.info(f"Saved coin ranking")
-
-
-async def main():
-    time_type = enums.RunTimeType.HOUR
-    async with db.async_session() as session:
-        start_dt, end_dt = get_times_for_comparison(
-            time_type, datetime(2022, 12, 29, 13, 1, 0)
-        )
-        print(f"start {start_dt}, end {end_dt}")
-        coin_changes = await async_calculate_averaged_coin_changes(
-            start_time=start_dt,
-            end_time=end_dt,
-            run_time_type=time_type,
-            session=session,
-        )
-        [print(coin_change) for coin_change in coin_changes]
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

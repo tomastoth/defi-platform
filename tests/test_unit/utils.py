@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest import mock
+import src  # noqa
 
 import dotenv
 import pytest
@@ -8,13 +9,12 @@ from defi_common.dbconfig import db_config
 from sqlalchemy import orm
 from sqlalchemy.ext import asyncio as sql_asyncio
 
-from src import data
+from defi_common import data
 from tests.test_unit.fixtures import model_address  # noqa
 
 
 def create_aggregated_update(
-        value_usd: float, amount: float, price: float, value_pct: float,
-        symbol: str = "ETH"
+    value_usd: float, amount: float, price: float, value_pct: float, symbol: str = "ETH"
 ) -> data.AddressUpdate:
     return data.AddressUpdate(
         value_usd=value_usd,
@@ -33,10 +33,10 @@ def create_aggregated_update(
 
 
 def create_aggregated_usd_asset(
-        symbol: str,
-        amount: float,
-        price: float,
-        value_usd: float,
+    symbol: str,
+    amount: float,
+    price: float,
+    value_usd: float,
 ) -> data.AggregatedUsdAsset:
     return data.AggregatedUsdAsset(
         symbol=symbol,
@@ -47,12 +47,12 @@ def create_aggregated_usd_asset(
 
 
 def create_aggregated_asset(
-        symbol: str,
-        amount: float,
-        price: float,
-        value_pct: float,
-        value_usd: float,
-        timestamp: int = 101,
+    symbol: str,
+    amount: float,
+    price: float,
+    value_pct: float,
+    value_usd: float,
+    timestamp: int = 101,
 ) -> data.AggregatedAsset:
     return data.AggregatedAsset(
         symbol=symbol,
@@ -87,12 +87,12 @@ def mock_finding_address(model_address: models.Address) -> mock.AsyncMock:
 
 
 def create_datetime(
-        year: int = 2022,
-        month: int = 1,
-        day: int = 1,
-        hour: int = 1,
-        minute: int = 1,
-        second: int = 1,
+    year: int = 2022,
+    month: int = 1,
+    day: int = 1,
+    hour: int = 1,
+    minute: int = 1,
+    second: int = 1,
 ) -> datetime:
     return datetime(
         year=year, month=month, day=day, hour=hour, minute=minute, second=second

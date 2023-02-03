@@ -1,11 +1,11 @@
 from datetime import datetime
 
 import pytest
+from defi_common import enums, data, time_utils
+from tests.test_unit.fixtures import *
 
-import src.time_utils
-from src import data, enums, performance, time_utils
+from src import performance
 from tests.test_unit import utils
-from tests.test_unit.fixtures import address, model_address  # noqa
 
 
 @pytest.mark.parametrize(
@@ -36,7 +36,7 @@ def test_asset_gaining_in_value(
 
 def test_extracting_dates_from_hourly_ranking_type() -> None:
     mock_time = utils.create_datetime(hour=2, minute=0, second=11)
-    start_time, end_time = src.time_utils.get_times_for_comparison(
+    start_time, end_time = time_utils.get_times_for_comparison(
         enums.RunTimeType.HOUR, wanted_time=mock_time
     )
     assert start_time == utils.create_datetime()
@@ -45,7 +45,7 @@ def test_extracting_dates_from_hourly_ranking_type() -> None:
 
 def test_extracting_dates_from_daily_ranking_type() -> None:
     mock_time = utils.create_datetime(day=2, hour=0, minute=0, second=1)
-    start_time, end_time = src.time_utils.get_times_for_comparison(
+    start_time, end_time = time_utils.get_times_for_comparison(
         enums.RunTimeType.DAY, wanted_time=mock_time
     )
     assert start_time == utils.create_datetime(hour=0, minute=0, second=1)
@@ -54,7 +54,7 @@ def test_extracting_dates_from_daily_ranking_type() -> None:
 
 def test_extracting_saving_time_for_ranking() -> None:
     mock_time = datetime(year=2022, month=1, day=1, hour=2, minute=0, second=1)
-    saving_time = src.time_utils.get_saving_time_for_ranking(
+    saving_time = time_utils.get_saving_time_for_ranking(
         address_ranking_type=enums.RunTimeType.HOUR, current_time=mock_time
     )
     assert saving_time == datetime(

@@ -6,9 +6,9 @@ import logging
 
 import sqlalchemy.ext.asyncio as sql_asyncio
 
-import data as data
-from src import data, enums, exceptions, http_utils
-from src.database import services
+from defi_common import data, enums, exceptions
+from src import http_utils
+from defi_common.database import services
 
 """
 1. start with list of addresses
