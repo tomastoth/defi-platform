@@ -6,12 +6,13 @@ from sqlalchemy.ext import asyncio as sql_asyncio
 from sqlalchemy.orm import sessionmaker
 
 import src  # noqa
+import src.token_balances.nasnen_portfolio
 from src import (
-    aggregated_assets,
     coin_changes,
     performance,
     spec,
 )
+from src.token_balances import aggregated_assets, zapper
 from defi_common.database import services
 from defi_common import data, enums, time_utils
 
@@ -86,7 +87,7 @@ async def async_run_single_address(
 
 async def async_update_all_addresses(
     session_maker: sessionmaker,
-    provide_assets: spec.AssetProvider = aggregated_assets.async_provide_aggregated_assets,
+    provide_assets: spec.AssetProvider = zapper.async_provide_aggregated_assets,
     sleep_time: int = 15,
 ) -> None:
     async with session_maker() as session:

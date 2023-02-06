@@ -27,6 +27,7 @@ defi-common = "^0.1.9"
 fastapi = "^0.89.1"
 uvicorn = "^0.20.0"
 asyncpg = "^0.27.0"
+moralis = "^0.1.19"
 
 [tool.poetry.dev-dependencies]
 black = "^22.10.0"

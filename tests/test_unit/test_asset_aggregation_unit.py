@@ -1,4 +1,4 @@
-from src import aggregated_assets
+from src.token_balances import aggregated_assets
 from defi_common import data
 from tests.test_unit import utils
 
@@ -26,7 +26,7 @@ def test_aggregating_from_multiple_blockchains() -> None:
     all_aggregated_usd_assets.extend(assets_blockchain_2)
     aggregated_all: list[
         data.AggregatedUsdAsset
-    ] = aggregated_assets._aggregate_usd_assets(
+    ] = aggregated_assets.aggregate_usd_assets(
         all_aggregated_usd_assets=all_aggregated_usd_assets
     )
     tom_coin = aggregated_all[0]

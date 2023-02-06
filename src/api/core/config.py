@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic import BaseSettings, HttpUrl
 from pydantic.networks import AnyHttpUrl
 
@@ -10,11 +8,11 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str = "defi-platform-api"
 
-    SENTRY_DSN: Optional[HttpUrl] = None
+    SENTRY_DSN: HttpUrl | None = None
 
     API_PATH: str = "/api/v1"
 
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = []
 
 
 settings = Settings()

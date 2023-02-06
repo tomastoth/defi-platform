@@ -1,8 +1,9 @@
 from datetime import datetime
 from unittest import mock
-import src  # noqa
 
 import dotenv
+
+import src  # noqa
 import pytest
 from defi_common.database import db, models
 from defi_common.dbconfig import db_config
