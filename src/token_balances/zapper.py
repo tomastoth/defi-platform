@@ -64,6 +64,8 @@ class ZapperAssetProvider(AggregatedAssetProvider):
         all_tokens_data = result[address.address]
         blockchain_to_assets = dict[str, list[AggregatedUsdAsset]]()
         all_assets = []
+        if not all_tokens_data:
+            return []
         for token_data in all_tokens_data:
             token = token_data["token"]
             balance_usd = token["balanceUSD"]

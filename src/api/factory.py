@@ -1,9 +1,11 @@
+from defi_common.database.mongo.beanie_com import create_beanie
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 from src.api.core.config import settings
 from src.api.routers.v1 import api_router
+
 
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
@@ -51,3 +53,5 @@ def create_app():
     setup_cors_middleware(app)
     setup_routers(app)
     return app
+
+
